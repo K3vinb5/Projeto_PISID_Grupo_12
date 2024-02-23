@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -13,6 +15,7 @@ import java.util.*;
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
 
 /**
  * @author Kevin
@@ -21,17 +24,16 @@ import java.awt.event.*;
 public class CloudToMongo implements MqttCallback {
     static MongoClient mongoClient;
     static DB db;
-    static DBCollection mongocol;
     static String mongo_user = "";
     static String mongo_password = "";
     static String mongo_address = "";
     static String cloud_server = "";
-    static String cloud_topic = "";
     static String mongo_host = "";
     static String mongo_replica = "";
     static String mongo_database = "";
-    static String mongo_collection = "";
     static String mongo_authentication = "";
+    static List<String> cloud_topics = new ArrayList<>();
+    static List<String> mongo_collections = new ArrayList<>();
     static JTextArea documentLabel = new JTextArea("\n");
     MqttClient mqttclient;
 
@@ -69,14 +71,15 @@ public class CloudToMongo implements MqttCallback {
             mongo_password = p.getProperty("mongo_password");
             mongo_replica = p.getProperty("mongo_replica");
             cloud_server = p.getProperty("cloud_server");
-            cloud_topic = p.getProperty("cloud_topic");
             mongo_host = p.getProperty("mongo_host");
             mongo_database = p.getProperty("mongo_database");
             mongo_authentication = p.getProperty("mongo_authentication");
-            mongo_collection = p.getProperty("mongo_collection");
+            cloud_topics = Arrays.stream(p.getProperty("cloud_topics").split(",")).toList();
+            mongo_collections = Arrays.stream(p.getProperty("mongo_collections").split(",")).toList();
         } catch (Exception e) {
             System.out.println("Error reading CloudToMongo.ini file " + e);
-            JOptionPane.showMessageDialog(null, "The CloudToMongo.inifile wasn't found.", "CloudToMongo", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "The CloudToMongo.ini file wasn't found.", "CloudToMongo", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
         }
         new CloudToMongo().connecCloud();
         new CloudToMongo().connectMongo();
@@ -89,10 +92,12 @@ public class CloudToMongo implements MqttCallback {
         int i;
         try {
             i = new Random().nextInt(100000);
-            mqttclient = new MqttClient(cloud_server, "CloudToMongo_" + String.valueOf(i) + "_" + cloud_topic);
+            mqttclient = new MqttClient(cloud_server, "CloudToMongo_" + String.valueOf(i) + "_" + "pisid_grupo12");
             mqttclient.connect();
             mqttclient.setCallback(this);
-            mqttclient.subscribe(cloud_topic);
+            for (String cloud_topic : cloud_topics) {
+                mqttclient.subscribe(cloud_topic);
+            }
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -102,7 +107,8 @@ public class CloudToMongo implements MqttCallback {
      * Connects to Mongo DataBase specified in .ini file
      */
     public void connectMongo() {
-        String mongoURI = /*"mongodb://"*/"";
+        //TODO fix this code so it uses the variables provided by the .ini file
+        String mongoURI = /*"mongodb://*/"";
 
         /*if (mongo_authentication.equals("true")) {
             mongoURI = mongoURI + mongo_user + ":" + mongo_password + "@";
@@ -122,17 +128,41 @@ public class CloudToMongo implements MqttCallback {
             }*/
         }
 
-        MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb+srv://admin:admin@pisid-grupo12.as9ayjp.mongodb.net/"));
+        mongoClient = new MongoClient(new MongoClientURI(mongoURI));
         db = mongoClient.getDB(mongo_database);
-        mongocol = db.getCollection(mongo_collection);
+        //mongocol = db.getCollection(mongo_collection);
     }
 
+    /**
+     *
+     * @param topic The topic that we have received
+     * @param c MqttMessage, it is already in a json format that is why we create a document to using Json.parse
+     * @throws Exception
+     */
     @Override
     public void messageArrived(String topic, MqttMessage c) throws Exception {
+
         try {
+            DBCollection mongocol;
+            JsonObject jsonObject = new Gson().fromJson(c.toString(), JsonObject.class);
             DBObject document_json;
             document_json = (DBObject) JSON.parse(c.toString());
-            mongocol.insert(document_json);
+            switch (topic){
+                case "pisid_grupo12_temp":
+                    if (jsonObject.get("Sensor").getAsInt() == 1){
+                        mongocol = db.getCollection(mongo_collections.get(0));
+                        mongocol.insert(document_json);
+                    }else if((jsonObject.get("Sensor").getAsInt() == 2)){
+                        mongocol = db.getCollection(mongo_collections.get(1));
+                        mongocol.insert(document_json);
+                    }
+                    break;
+                case "pisid_grupo12_maze":
+                    mongocol = db.getCollection(mongo_collections.getLast());
+                    mongocol.insert(document_json);
+                    break;
+                default:
+            }
             documentLabel.append(c.toString() + "\n");
         } catch (Exception e) {
             System.out.println(e);
