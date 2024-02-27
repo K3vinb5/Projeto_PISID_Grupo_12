@@ -4,10 +4,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-
 import java.util.*;
-import java.util.Vector;
-import java.io.File;
 import java.io.*;
 import javax.swing.*;
 import java.awt.*;
@@ -15,8 +12,8 @@ import java.awt.event.*;
 
 public class ReceiveCloud  implements MqttCallback {
     MqttClient mqttclient;
-    static String cloud_server = new String();
-    static String cloud_topic = new String();
+    static String cloud_server = "";
+    static String cloud_topic = "";
     static JTextArea documentLabel = new JTextArea("\n");
 
     private static void createWindow() {
@@ -61,7 +58,7 @@ public class ReceiveCloud  implements MqttCallback {
         int i;
         try {
             i = new Random().nextInt(100000);
-            mqttclient = new MqttClient(cloud_server, "ReceiveCloud"+String.valueOf(i)+"_"+cloud_topic);
+            mqttclient = new MqttClient(cloud_server, "ReceiveCloud"+ i + "_" +cloud_topic);
             mqttclient.connect();
             mqttclient.setCallback(this);
             mqttclient.subscribe(cloud_topic);
@@ -71,12 +68,11 @@ public class ReceiveCloud  implements MqttCallback {
     }
 
     @Override
-    public void messageArrived(String topic, MqttMessage c)
-            throws Exception {
+    public void messageArrived(String topic, MqttMessage c) {
         try {
             documentLabel.append(c.toString()+"\n");
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 

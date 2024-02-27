@@ -11,10 +11,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * @author kevin
+ * @version 1.0
+ */
 public class SendCloud  implements MqttCallback  {
     static MqttClient mqttclient;
-    static String cloud_server = new String();
-    static String cloud_topic = new String();
+    static String cloud_server = "";
+    static String cloud_topic = "";
     static JTextArea textArea = new JTextArea(10, 50);
 
     /**
@@ -27,7 +31,8 @@ public class SendCloud  implements MqttCallback  {
             mqtt_message.setPayload(leitura.getBytes());
             mqttclient.publish(cloud_topic, mqtt_message);
         } catch (MqttException e) {
-            e.printStackTrace();}
+            e.printStackTrace();
+        }
     }
 
     /**

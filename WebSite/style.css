@@ -1,0 +1,139 @@
+*{
+    box-sizing: border-box;
+}
+
+body {
+    background: #e5e5e5;
+    display: flex;
+    margin: 0px;
+    flex-direction: column;
+}
+
+nav {
+    background-color: #808080; /* Grayish color */
+    padding: 10px;
+    text-align: left;
+}
+
+nav a {
+    color: #fff; /* White text color */
+    text-decoration: none;
+    padding: 10px 20px;
+    margin: 0 10px;
+    display: inline-block;
+}
+
+nav a:hover {
+    background-color: #555; /* Darker grayish color on hover */
+}
+
+.logout-container {
+    background-color: #808080;
+    text-align: right;
+    padding: 0;
+    margin: 0;
+    float: right;
+    #display: flow;
+}
+
+.main-nav-container {
+    background-color: #808080;
+    float: left;
+    text-align: left;
+    padding: 0;
+    margin: 0;
+}
+
+.index-body{
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+}
+
+div{
+    border-radius: 5px;
+    margin: 10px;
+    background-color: white;
+}
+
+.new-experience {
+    margin-left: 100px;
+    margin-right: 100px;
+    margin-top: 50px;
+    background-color: #e5e5e5;
+    display: block;
+    text-align: left;
+}
+
+.new-experience form{
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+}
+
+.new-experience form input,label{
+    margin-left: 40px;
+}
+
+
+.index-form {
+    width: 500px;
+    border: 2px solid #ccc;
+    padding: 30px;
+    background: #fff;
+    border-radius: 15px;
+}
+
+input[type="text"],input[type="password"],input[type="datetime-local"],input[type="number"] {
+    display: block;
+    border: 2px solid #ccc;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+}
+
+label{
+    padding: 10px;
+}
+
+button{
+    cursor: pointer;
+    display: block;
+    padding: 10px 15px;
+    background-color: #d5d5d5;
+    border: 2px solid #000000;
+    margin: 10px;
+    border-radius: 10px;
+}
+
+button:hover{
+    background-color: #bebebe;
+}
+
+.new-experience form button{
+    margin-left: 40px;
+}
+
+table {
+    margin: 20px;
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 95%;
+    border: 2px solid black;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+p,h1,h2,h3{
+    margin: 10px;
+}
+

@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"90144534042d44fabd2e41e4c8fe25c7","collectionName":"TempSensor1","type":"collection"}
