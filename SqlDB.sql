@@ -2,10 +2,10 @@
 -- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Feb 27, 2024 at 03:28 PM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.2.0
+-- Host: 127.0.0.1
+-- Tempo de geração: 01-Mar-2024 às 17:13
+-- Versão do servidor: 10.4.27-MariaDB
+-- versão do PHP: 8.1.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `grupo12_bd`
+-- Banco de dados: `grupo12_bd`
 --
 CREATE DATABASE IF NOT EXISTS `grupo12_bd` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `grupo12_bd`;
@@ -26,7 +26,7 @@ USE `grupo12_bd`;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `alerta`
+-- Estrutura da tabela `alerta`
 --
 
 DROP TABLE IF EXISTS `alerta`;
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `alerta` (
   `TipoAlerta` enum('Sem movimento','Temperatura','Capacidade da sala') NOT NULL,
   `Mensagem` varchar(100) NOT NULL,
   `DataHoraEscrita` datetime NOT NULL,
-  `IDExperiência` int(11) NOT NULL,
+  `IDExperiência` int(11) DEFAULT NULL,
   PRIMARY KEY (`IDAlerta`),
   KEY `ExperienciaFK` (`IDExperiência`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `alerta` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `experiência`
+-- Estrutura da tabela `experiência`
 --
 
 DROP TABLE IF EXISTS `experiência`;
@@ -64,29 +64,30 @@ CREATE TABLE IF NOT EXISTS `experiência` (
   `TolerânciaTemperatura` int(11) NOT NULL,
   `DataHoraInicioExperiência` datetime DEFAULT NULL,
   `DataHoraFimExperiência` datetime DEFAULT NULL,
+  `SnoozeTime` int(11) NOT NULL,
   PRIMARY KEY (`IDExperiência`),
   KEY `UtilizadoresFK` (`Investigador`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Dumping data for table `experiência`
+-- Extraindo dados da tabela `experiência`
 --
 
-INSERT INTO `experiência` (`IDExperiência`, `Descrição`, `Investigador`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaIdeal`, `VariaçãoTemperaturaMáxima`, `TolerânciaTemperatura`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`) VALUES
-(1, 'Descrição Experiência', 1, '2024-02-24 23:26:18', 12, 12, 12, '12.00', '0.00', 2, '2024-02-21 22:26:00', '2024-02-21 22:33:00'),
-(2, 'asdasd', 1, '2024-02-25 00:55:47', 12, 12, 12, '12.00', '12.10', 12, '2024-02-28 23:55:48', '2024-02-21 23:55:48'),
-(3, 'asd', 1, '2024-02-25 03:02:38', 12, 12, 12, '12.00', '12.20', 12, '2024-02-12 03:02:12', '2024-02-13 03:02:12'),
-(4, 'descricao', 1, '2024-02-25 03:50:44', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12'),
-(5, 'descricao', 1, '2024-02-25 03:58:18', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12'),
-(6, 'descricao', 2, '2024-02-25 04:00:58', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12'),
-(7, 'descricao', 1, '2024-02-25 04:06:37', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12'),
-(8, 'descricao', 2, '2024-02-25 04:07:04', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12'),
-(9, 'descricao', 2, '2024-02-26 15:11:01', 20, 20, 20, '20.00', '20.00', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12');
+INSERT INTO `experiência` (`IDExperiência`, `Descrição`, `Investigador`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaIdeal`, `VariaçãoTemperaturaMáxima`, `TolerânciaTemperatura`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `SnoozeTime`) VALUES
+(1, 'Descrição Experiência', 1, '2024-02-24 23:26:18', 12, 12, 12, '12.00', '0.00', 2, '2024-02-21 22:26:00', '2024-02-21 22:33:00', 0),
+(2, 'asdasd', 1, '2024-02-25 00:55:47', 12, 12, 12, '12.00', '12.10', 12, '2024-02-28 23:55:48', '2024-02-21 23:55:48', 0),
+(3, 'asd', 1, '2024-02-25 03:02:38', 12, 12, 12, '12.00', '12.20', 12, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
+(4, 'descricao', 1, '2024-02-25 03:50:44', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
+(5, 'descricao', 1, '2024-02-25 03:58:18', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
+(6, 'descricao', 2, '2024-02-25 04:00:58', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
+(7, 'descricao', 1, '2024-02-25 04:06:37', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
+(8, 'descricao', 2, '2024-02-25 04:07:04', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
+(9, 'descricao', 2, '2024-02-26 15:11:01', 20, 20, 20, '20.00', '20.00', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `mediçõespassagens`
+-- Estrutura da tabela `mediçõespassagens`
 --
 
 DROP TABLE IF EXISTS `mediçõespassagens`;
@@ -103,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `mediçõespassagens` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `mediçõessalas`
+-- Estrutura da tabela `mediçõessalas`
 --
 
 DROP TABLE IF EXISTS `mediçõessalas`;
@@ -119,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `mediçõessalas` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `mediçõestemperatura`
+-- Estrutura da tabela `mediçõestemperatura`
 --
 
 DROP TABLE IF EXISTS `mediçõestemperatura`;
@@ -136,7 +137,7 @@ CREATE TABLE IF NOT EXISTS `mediçõestemperatura` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `parâmetroadicionais`
+-- Estrutura da tabela `parâmetroadicionais`
 --
 
 DROP TABLE IF EXISTS `parâmetroadicionais`;
@@ -150,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `parâmetroadicionais` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `utilizador`
+-- Estrutura da tabela `utilizador`
 --
 
 DROP TABLE IF EXISTS `utilizador`;
@@ -158,14 +159,14 @@ CREATE TABLE IF NOT EXISTS `utilizador` (
   `IDUtilizador` int(11) NOT NULL AUTO_INCREMENT,
   `NomeUtilizador` varchar(100) NOT NULL,
   `TelefoneUtilizador` varchar(12) NOT NULL,
-  `TipoUtilizador` enum('Investigador','Técnico','Administrador de Aplicação','Administrador de Base de Dados') NOT NULL,
+  `TipoUtilizador` enum('Investigador','Administrador de Aplicação','Administrador de Base de Dados') NOT NULL,
   `EmailUtilizador` varchar(50) NOT NULL,
   `PasswordUtilizador` varchar(200) NOT NULL,
   PRIMARY KEY (`IDUtilizador`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Dumping data for table `utilizador`
+-- Extraindo dados da tabela `utilizador`
 --
 
 INSERT INTO `utilizador` (`IDUtilizador`, `NomeUtilizador`, `TelefoneUtilizador`, `TipoUtilizador`, `EmailUtilizador`, `PasswordUtilizador`) VALUES
@@ -173,35 +174,35 @@ INSERT INTO `utilizador` (`IDUtilizador`, `NomeUtilizador`, `TelefoneUtilizador`
 (2, 'Kevin', '987654322', 'Investigador', 'kevin@email.com', 'kevin');
 
 --
--- Constraints for dumped tables
+-- Restrições para despejos de tabelas
 --
 
 --
--- Constraints for table `alerta`
+-- Limitadores para a tabela `alerta`
 --
 ALTER TABLE `alerta`
   ADD CONSTRAINT `ExperienciaFK` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
 
 --
--- Constraints for table `experiência`
+-- Limitadores para a tabela `experiência`
 --
 ALTER TABLE `experiência`
   ADD CONSTRAINT `UtilizadoresFK` FOREIGN KEY (`Investigador`) REFERENCES `utilizador` (`IDUtilizador`) ON UPDATE CASCADE;
 
 --
--- Constraints for table `mediçõespassagens`
+-- Limitadores para a tabela `mediçõespassagens`
 --
 ALTER TABLE `mediçõespassagens`
   ADD CONSTRAINT `ExpPassagem` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
 
 --
--- Constraints for table `mediçõessalas`
+-- Limitadores para a tabela `mediçõessalas`
 --
 ALTER TABLE `mediçõessalas`
   ADD CONSTRAINT `ExpSalaFK` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
 
 --
--- Constraints for table `mediçõestemperatura`
+-- Limitadores para a tabela `mediçõestemperatura`
 --
 ALTER TABLE `mediçõestemperatura`
   ADD CONSTRAINT `ExpTemperatura` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
