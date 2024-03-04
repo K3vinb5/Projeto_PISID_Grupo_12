@@ -4,7 +4,7 @@ function addExperience() {
     const newExperienceForm = document.createElement('div');
     newExperienceForm.className = "new-experience"
     newExperienceForm.innerHTML = `
-        <br><form action="db_addExperience.php" method="post">
+        <br><form action="db/db_addExperience.php" method="post">
             <label for="desc">Descrição Experiência</label>
             <input type="text" id="desc" name="desc" required><br>
             
@@ -26,21 +26,11 @@ function addExperience() {
             <label for="allowed_temp">Tolerância Temperatura</label>
             <input type="number" id="allowed_temp" name="allowed_temp"><br>
             
-            <label for="begin_experience">Início Experiência</label>
-            <input type="datetime-local" id="begin_experience" name="begin_experience"><br>
-            
-            <label for="end_experience">Fim Experiência</label>
-            <input type="datetime-local" id="end_experience" name="end_experience"><br>
-            
-            <button type="submit" onclick="addToTable()">Agendar</button>
+            <button type="submit" onclick="addToTable()">Criar Experiência</button>
             
         <form>
     `;
 
     addExperienceDiv.appendChild(newExperienceForm);
-
-}
-
-function addToTable(){
 
 }

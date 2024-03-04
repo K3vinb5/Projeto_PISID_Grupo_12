@@ -1,0 +1,12 @@
+com.example.flutter_app-jetified-annotation-experimental-1.1.0-0 /home/kevin/.gradle/caches/transforms-3/02315cc9f75263553d2042718fc375ee/transformed/jetified-annotation-experimental-1.1.0/res
+com.example.flutter_app-jetified-window-1.0.0-beta04-1 /home/kevin/.gradle/caches/transforms-3/076eb9235982ee06112d76594ea8585f/transformed/jetified-window-1.0.0-beta04/res
+com.example.flutter_app-jetified-window-java-1.0.0-beta04-2 /home/kevin/.gradle/caches/transforms-3/99750bb863b6fe460a7b5da8686e778d/transformed/jetified-window-java-1.0.0-beta04/res
+com.example.flutter_app-core-1.6.0-3 /home/kevin/.gradle/caches/transforms-3/d08c73bfb05384f2e52578171dbd141e/transformed/core-1.6.0/res
+com.example.flutter_app-debug-4 /home/kevin/Documents/3º ano/2º Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/android/app/src/debug/res
+com.example.flutter_app-main-5 /home/kevin/Documents/3º ano/2º Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/android/app/src/main/res
+com.example.flutter_app-pngs-6 /home/kevin/Documents/3º ano/2º Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/build/app/generated/res/pngs/debug
+com.example.flutter_app-resValues-7 /home/kevin/Documents/3º ano/2º Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/build/app/generated/res/resValues/debug
+com.example.flutter_app-rs-8 /home/kevin/Documents/3º ano/2º Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/build/app/generated/res/rs/debug
+com.example.flutter_app-mergeDebugResources-9 /home/kevin/Documents/3º ano/2º Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/build/app/intermediates/incremental/debug/mergeDebugResources/merged.dir
+com.example.flutter_app-mergeDebugResources-10 /home/kevin/Documents/3º ano/2º Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/build/app/intermediates/incremental/debug/mergeDebugResources/stripped.dir
+com.example.flutter_app-merged_res-11 /home/kevin/Documents/3º ano/2º Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/build/app/intermediates/merged_res/debug
