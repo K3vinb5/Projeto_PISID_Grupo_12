@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 01-Mar-2024 às 17:13
+-- Tempo de geração: 15-Mar-2024 às 20:55
 -- Versão do servidor: 10.4.27-MariaDB
 -- versão do PHP: 8.1.12
 
@@ -22,6 +22,211 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `grupo12_bd` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `grupo12_bd`;
+
+DELIMITER $$
+--
+-- Procedimentos
+--
+DROP PROCEDURE IF EXISTS `ApagarExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	UPDATE experiência e
+    SET e.RemocaoLogica = TRUE
+    WHERE e.IDExperiência = idExperiencia;
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `ApagarUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarUtilizador` (IN `email` VARCHAR(50))   BEGIN
+
+	UPDATE utilizador u
+    SET u.RemocaoLogica = TRUE
+    WHERE u.EmailUtilizador = email;
+    
+    SELECT ROW_COUNT();
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `AtribuirExperiênciaInvestigador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AtribuirExperiênciaInvestigador` (IN `idExperiencia` INT, IN `idInvestigador` INT)   BEGIN
+
+	DECLARE countExp, countUti, idExperienciaDecorrer INT;
+
+    SELECT COUNT(*) INTO countExp FROM experiência e WHERE e.IDExperiência = idExperiencia;
+    SELECT COUNT(*) INTO countUti FROM utilizador u WHERE u.IDUtilizador = idInvestigador;
+	
+    IF countExp>0 AND countUti>0 THEN
+    	CALL ObterExperienciaADecorrer(idExperienciaDecorrer);
+        IF idExperienciaDecorrer != idExperiencia THEN
+        	UPDATE experiência e
+            SET e.Investigador = idInvestigador
+            WHERE e.IDExperiência = idExperiencia;
+		END IF;
+	END IF;
+    
+    SELECT ROW_COUNT();
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `AtualizarNumRatosSala`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AtualizarNumRatosSala` (IN `salaOrigem` INT, IN `salaDestino` INT, IN `idExperiencia` INT)   BEGIN
+
+	DECLARE valorOrigem, valorDestino INT;
+    SELECT m.NúmeroRatosFinal INTO valorOrigem FROM mediçõessalas m WHERE m.IDExperiência = idExperiencia AND m.Sala = salaOrigem LIMIT 1;
+    SELECT m.NúmeroRatosFinal INTO valorDestino FROM mediçõessalas m WHERE m.IDExperiência = idExperiencia AND m.Sala = salaDestino LIMIT 1;
+    
+	UPDATE mediçõessalas
+    SET NúmeroRatosFinal = (valorOrigem - 1)
+    WHERE Sala = salaOrigem AND IDExperiência = idExperiencia;
+    
+    UPDATE mediçõessalas
+    SET NúmeroRatosFinal = (valorDestino + 1)
+    WHERE Sala = salaDestino AND IDExperiência = idExperiencia;
+
+END$$
+
+DROP PROCEDURE IF EXISTS `EditarExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` TEXT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `toleranciaTemperatura` DECIMAL(4,2), IN `snoozeTime` INT, IN `idExperiencia` INT)   BEGIN
+
+	DECLARE idExperienciaDecorrer INT;
+    CALL ObterExperienciaADecorrer(idExperienciaDecorrer);
+    
+    IF idExperiencia = idExperienciaDecorrer THEN
+    	UPDATE experiência e
+        SET e.Descrição = IFNULL(descricao, e.Descrição)
+        WHERE e.IDExperiência = idExperiencia;
+	ELSE
+    	IF numeroRatos>0 AND limiteRatosSala>0 AND segSemMovimento>0 AND toleranciaTemperatura>0 AND snoozeTime>0 AND temperaturaMaxima>temperaturaMinima THEN
+            UPDATE experiência e
+            SET e.Descrição = IFNULL(descricao, e.Descrição), 
+                e.NúmeroRatos = IFNULL(numeroRatos, e.NúmeroRatos), 
+                e.LimiteRatosSala = IFNULL(limiteRatosSala, e.LimiteRatosSala), 
+                e.SegundosSemMovimento = IFNULL(segSemMovimento, e.SegundosSemMovimento), 
+                e.TemperaturaMinima = IFNULL(temperaturaMinima, e.TemperaturaMinima), 
+                e.TemperaturaMaxima = IFNULL(temperaturaMaxima, e.TemperaturaMaxima), 
+                e.TolerânciaTemperatura = IFNULL(toleranciaTemperatura, e.TolerânciaTemperatura), 
+                e.SnoozeTime = IFNULL(snoozeTime, e.SnoozeTime)
+            WHERE e.IDExperiência = idExperiencia;
+        END IF;
+	END IF;
+    	
+
+END$$
+
+DROP PROCEDURE IF EXISTS `EditarUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarUtilizador` (IN `idInvestigador` INT, IN `email` VARCHAR(50), IN `nome` VARCHAR(100), IN `telefone` VARCHAR(12), IN `password` VARCHAR(100))   BEGIN
+
+	IF email IS NOT NULL THEN
+    	UPDATE utilizador u
+        SET u.EmailUtilizador = email
+        WHERE u.IDUtilizador = idInvestigador;
+	END IF;
+    
+    IF nome IS NOT NULL THEN
+    	UPDATE utilizador u
+        SET u.NomeUtilizador = nome
+        WHERE u.IDUtilizador = idInvestigador;
+	END IF;
+    
+    IF telefone IS NOT NULL THEN
+    	UPDATE utilizador u
+        SET u.TelefoneUtilizador = telefone
+        WHERE u.IDUtilizador = idInvestigador;
+	END IF;
+    
+    IF password IS NOT NULL THEN        
+    	UPDATE utilizador u
+        SET u.PasswordUtilizador = AES_ENCRYPT(password, 'grupo12_bd')
+        WHERE u.IDUtilizador = idInvestigador;
+	END IF;
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `IniciarSala`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `IniciarSala` (IN `idExperiencia` INT, IN `numeroRatos` INT, IN `sala` INT)   BEGIN
+
+	INSERT INTO mediçõessalas (IDExperiência, NúmeroRatosFinal, Sala)
+	VALUES (idExperiencia, numeroRatos, numeroRatos);
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirExperiência`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirExperiência` (IN `descricao` TEXT, IN `idInvestigador` INT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `toleranciaTemperatura` DECIMAL(4,2), IN `snoozeTime` INT)   BEGIN
+
+	DECLARE counter, idExperiencia INT;
+	IF numeroRatos>0 AND limiteRatosSala>0 AND segSemMovimento>0 AND toleranciaTemperatura>0 AND snoozeTime>0 AND temperaturaMaxima>temperaturaMinima THEN
+    	INSERT INTO utilizador (Descrição, Investigador, DataHoraCriaçãoExperiência, NúmeroRatos, LimiteRatosSala, SegundosSemMovimento, TemperaturaMinima, TemperaturaMaxima, TolerânciaTemperatura, SnoozeTime)
+        VALUES (descricao, idInvestigador, NOW(), numeroRatos, limiteRatosSala, segSemMovimento, temperaturaMinima, temperaturaMaxima, toleranciaTemperatura, snoozeTime);
+        SELECT LAST_INSERT_ID() AS idExperiencia;
+
+        SET counter = 1;
+        CALL IniciarSala(idExperiencia, numeroRatos, counter);
+        WHILE counter <= 10 DO
+            CALL IniciarSala(idExperiencia, 0, counter);
+            SET counter = counter + 1;
+        END WHILE;
+    END IF;
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirMovimento`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirMovimento` (IN `dataHora` DATETIME, IN `salaOrigem` INT, IN `salaDestino` INT, IN `idMongo` INT)   BEGIN
+
+    DECLARE idExperiencia INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+
+    INSERT INTO mediçõespassagens (DataHora, SalaOrigem, SalaDestino, IDExperiencia, IDMongo)
+    VALUES (dataHora, salaOrigem, salaDestino, idExperiencia, idMongo);
+    
+    CALL AtualizarNumRatosSala(salaOrigem, salaDestino, idExperiencia);
+
+    SELECT ROW_COUNT(); -- 0- means no rows affected
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirTemperatura`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirTemperatura` (IN `dataHora` DATETIME, IN `leitura` DECIMAL(4,2), IN `sensor` INT, IN `idMongo` VARCHAR(50))   BEGIN
+
+    DECLARE idExperiencia INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+
+    INSERT INTO mediçõestemperatura (DataHora, Leitura, Sensor, IDExperiencia, IDMongo)
+    VALUES (dataHora, leitura, sensor, idExperiencia, idMongo);
+
+    SELECT ROW_COUNT(); -- 0- means no rows affected/nothing inserted 
+                      -- 1- means your row has been inserted successfully
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirUtilizador` (IN `email` VARCHAR(50), IN `nome` VARCHAR(100), IN `tipoUtilizador` VARCHAR(50), IN `telefone` VARCHAR(12))   BEGIN
+
+	Declare Encrypt varbinary(200);
+    SET Encrypt = AES_ENCRYPT('Pass123!', 'grupo12_bd');
+
+    INSERT INTO utilizador (NomeUtilizador, TelefoneUtilizador, TipoUtilizador, EmailUtilizador, PasswordUtilizador)
+    VALUES (nome, telefone, tipoUtilizador, email, Encrypt);
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterExperienciaADecorrer`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperienciaADecorrer` ()   BEGIN
+
+    SELECT IDExperiência FROM v_expadecorrer LIMIT 1;
+    
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -59,12 +264,13 @@ CREATE TABLE IF NOT EXISTS `experiência` (
   `NúmeroRatos` int(11) NOT NULL,
   `LimiteRatosSala` int(11) NOT NULL,
   `SegundosSemMovimento` int(11) NOT NULL,
-  `TemperaturaIdeal` decimal(4,2) NOT NULL,
-  `VariaçãoTemperaturaMáxima` decimal(4,2) NOT NULL,
-  `TolerânciaTemperatura` int(11) NOT NULL,
+  `TemperaturaMinima` decimal(4,2) NOT NULL,
+  `TemperaturaMaxima` decimal(4,2) NOT NULL,
+  `TolerânciaTemperatura` decimal(4,2) NOT NULL,
   `DataHoraInicioExperiência` datetime DEFAULT NULL,
   `DataHoraFimExperiência` datetime DEFAULT NULL,
   `SnoozeTime` int(11) NOT NULL,
+  `RemocaoLogica` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`IDExperiência`),
   KEY `UtilizadoresFK` (`Investigador`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -73,16 +279,16 @@ CREATE TABLE IF NOT EXISTS `experiência` (
 -- Extraindo dados da tabela `experiência`
 --
 
-INSERT INTO `experiência` (`IDExperiência`, `Descrição`, `Investigador`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaIdeal`, `VariaçãoTemperaturaMáxima`, `TolerânciaTemperatura`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `SnoozeTime`) VALUES
-(1, 'Descrição Experiência', 1, '2024-02-24 23:26:18', 12, 12, 12, '12.00', '0.00', 2, '2024-02-21 22:26:00', '2024-02-21 22:33:00', 0),
-(2, 'asdasd', 1, '2024-02-25 00:55:47', 12, 12, 12, '12.00', '12.10', 12, '2024-02-28 23:55:48', '2024-02-21 23:55:48', 0),
-(3, 'asd', 1, '2024-02-25 03:02:38', 12, 12, 12, '12.00', '12.20', 12, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
-(4, 'descricao', 1, '2024-02-25 03:50:44', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
-(5, 'descricao', 1, '2024-02-25 03:58:18', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
-(6, 'descricao', 2, '2024-02-25 04:00:58', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
-(7, 'descricao', 1, '2024-02-25 04:06:37', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
-(8, 'descricao', 2, '2024-02-25 04:07:04', 20, 20, 20, '20.00', '1.10', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0),
-(9, 'descricao', 2, '2024-02-26 15:11:01', 20, 20, 20, '20.00', '20.00', 10, '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0);
+INSERT INTO `experiência` (`IDExperiência`, `Descrição`, `Investigador`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TolerânciaTemperatura`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `SnoozeTime`, `RemocaoLogica`) VALUES
+(1, 'Descrição Experiência', 1, '2024-02-24 23:26:18', 12, 12, 12, '12.00', '0.00', '2.00', '2024-02-21 22:26:00', '2024-02-21 22:33:00', 0, 0),
+(2, 'asdasd', 1, '2024-02-25 00:55:47', 12, 12, 12, '12.00', '12.10', '12.00', '2024-02-28 23:55:48', '2024-02-21 23:55:48', 0, 0),
+(3, 'asd', 1, '2024-02-25 03:02:38', 12, 12, 12, '12.00', '12.20', '12.00', '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0, 0),
+(4, 'descricao', 1, '2024-02-25 03:50:44', 20, 20, 20, '20.00', '1.10', '10.00', '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0, 0),
+(5, 'descricao', 1, '2024-02-25 03:58:18', 20, 20, 20, '20.00', '1.10', '10.00', '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0, 0),
+(6, 'descricao', 2, '2024-02-25 04:00:58', 20, 20, 20, '20.00', '1.10', '10.00', '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0, 0),
+(7, 'descricao', 1, '2024-02-25 04:06:37', 20, 20, 20, '20.00', '1.10', '10.00', '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0, 0),
+(8, 'descricao', 2, '2024-02-25 04:07:04', 20, 20, 20, '20.00', '1.10', '10.00', '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0, 0),
+(9, 'descricao', 2, '2024-02-26 15:11:01', 20, 20, 20, '20.00', '20.00', '10.00', '2024-02-12 03:02:12', '2024-02-13 03:02:12', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -97,7 +303,9 @@ CREATE TABLE IF NOT EXISTS `mediçõespassagens` (
   `SalaOrigem` int(11) NOT NULL,
   `SalaDestino` int(11) NOT NULL,
   `IDExperiência` int(11) NOT NULL,
+  `IDMongo` varchar(50) NOT NULL,
   PRIMARY KEY (`IDMedição`),
+  UNIQUE KEY `IDMongo` (`IDMongo`),
   KEY `ExpPassagem` (`IDExperiência`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -130,7 +338,9 @@ CREATE TABLE IF NOT EXISTS `mediçõestemperatura` (
   `Leitura` decimal(4,2) NOT NULL,
   `Sensor` int(11) NOT NULL,
   `IDExperiência` int(11) NOT NULL,
+  `IDMongo` varchar(50) NOT NULL,
   PRIMARY KEY (`IDMedição`),
+  UNIQUE KEY `IDMongo` (`IDMongo`),
   KEY `ExpTemperatura` (`IDExperiência`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -159,19 +369,22 @@ CREATE TABLE IF NOT EXISTS `utilizador` (
   `IDUtilizador` int(11) NOT NULL AUTO_INCREMENT,
   `NomeUtilizador` varchar(100) NOT NULL,
   `TelefoneUtilizador` varchar(12) NOT NULL,
-  `TipoUtilizador` enum('Investigador','Administrador de Aplicação','Administrador de Base de Dados') NOT NULL,
+  `TipoUtilizador` enum('Investigador','Administrador de Aplicação','System (WritemySQL)') NOT NULL,
   `EmailUtilizador` varchar(50) NOT NULL,
-  `PasswordUtilizador` varchar(200) NOT NULL,
-  PRIMARY KEY (`IDUtilizador`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `PasswordUtilizador` varbinary(200) NOT NULL,
+  `RemocaoLogica` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`IDUtilizador`),
+  UNIQUE KEY `EmailUtilizador` (`EmailUtilizador`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Extraindo dados da tabela `utilizador`
 --
 
-INSERT INTO `utilizador` (`IDUtilizador`, `NomeUtilizador`, `TelefoneUtilizador`, `TipoUtilizador`, `EmailUtilizador`, `PasswordUtilizador`) VALUES
-(1, 'admin', '987654321', 'Administrador de Base de Dados', 'admin@email.com', 'admin'),
-(2, 'Kevin', '987654322', 'Investigador', 'kevin@email.com', 'kevin');
+INSERT INTO `utilizador` (`IDUtilizador`, `NomeUtilizador`, `TelefoneUtilizador`, `TipoUtilizador`, `EmailUtilizador`, `PasswordUtilizador`, `RemocaoLogica`) VALUES
+(1, 'admin', '987654321', '', 'admin@email.com', 0x61646d696e, 0),
+(2, 'Kevin', '987654322', 'Investigador', 'kevin@email.com', 0x6b6576696e, 0),
+(3, 'Investigador 1', '912345678', 'Investigador', 'investigador1@gmail.com', 0x9feb7a8a97596e9df8a464e5432ff7cf, 0);
 
 --
 -- Restrições para despejos de tabelas
