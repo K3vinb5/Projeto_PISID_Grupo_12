@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 15-Mar-2024 às 20:55
+-- Tempo de geração: 16-Mar-2024 às 02:17
 -- Versão do servidor: 10.4.27-MariaDB
 -- versão do PHP: 8.1.12
 
@@ -87,6 +87,26 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AtualizarNumRatosSala` (IN `salaOri
 
 END$$
 
+DROP PROCEDURE IF EXISTS `ComecarTerminarExperienca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ComecarTerminarExperienca` (IN `idExperiencia` INT)   BEGIN
+
+	DECLARE idExperienciaDecorrer INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+    
+    IF idExperienciaDecorrer IS NULL THEN
+    	UPDATE experiência e
+        SET e.DataHoraInicioExperiência = NOW()
+        WHERE e.IDExperiência = idExperiencia;
+	ELSE
+    	IF idExperiencia = idExperienciaDecorrer THEN
+        	UPDATE experiência e
+            SET e.DataHoraFimExperiência = NOW()
+            WHERE e.IDExperiência = idExperiencia;
+		END IF;
+	END IF;
+    
+END$$
+
 DROP PROCEDURE IF EXISTS `EditarExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` TEXT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `toleranciaTemperatura` DECIMAL(4,2), IN `snoozeTime` INT, IN `idExperiencia` INT)   BEGIN
 
@@ -156,6 +176,24 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `IniciarSala` (IN `idExperiencia` IN
 
 END$$
 
+DROP PROCEDURE IF EXISTS `InserirAlerta`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirAlerta` (IN `sala` INT, IN `sensor` INT, IN `leitura` DECIMAL(4,2), IN `tipoAlerta` VARCHAR(100), IN `mensagem` VARCHAR(100))   BEGIN
+
+	DECLARE idExperiencia INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+
+	IF sala IS NOT NULL THEN
+    	INSERT INTO alerta (DataHora, Sala, TipoAlerta, Mensagem, IDExperiência) 
+        VALUES (NOW(), sala, tipoAlerta, mensagem, idExperiencia);
+    ELSEIF sensor IS NOT NULL AND leitura IS NOT NULL THEN
+    	INSERT INTO alerta (DataHora, Sensor, Leitura, TipoAlerta, Mensagem, IDExperiência) 
+        VALUES (NOW(), sensor, leitura, tipoAlerta, mensagem, idExperiencia);
+	END IF;
+    
+    SELECT ROW_COUNT();
+
+END$$
+
 DROP PROCEDURE IF EXISTS `InserirExperiência`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirExperiência` (IN `descricao` TEXT, IN `idInvestigador` INT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `toleranciaTemperatura` DECIMAL(4,2), IN `snoozeTime` INT)   BEGIN
 
@@ -219,10 +257,59 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirUtilizador` (IN `email` VARC
 
 END$$
 
+DROP PROCEDURE IF EXISTS `ObterExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	SELECT * FROM experiência e WHERE e.IDExperiência = idExperiencia;
+    
+END$$
+
 DROP PROCEDURE IF EXISTS `ObterExperienciaADecorrer`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperienciaADecorrer` ()   BEGIN
 
     SELECT IDExperiência FROM v_expadecorrer LIMIT 1;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterInfoUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterInfoUtilizador` (IN `idUtilizador` INT)   BEGIN
+
+	SELECT * FROM utilizador u WHERE u.IDUtilizador = idUtilizador;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterListaExperiencias`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterListaExperiencias` ()   BEGIN
+
+	SELECT * FROM experiência;
+
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterPassagensExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterPassagensExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	SELECT * FROM mediçõespassagens m WHERE m.IDExperiência = idExperiencia;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterRatosSalasExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterRatosSalasExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	SELECT * FROM mediçõessalas m WHERE m.IDExperiência = idExperiencia;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterTemperaturasExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterTemperaturasExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	SELECT * FROM mediçõestemperatura m WHERE m.IDExperiência = idExperiencia;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterUtilizadores`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterUtilizadores` ()   BEGIN
+
+	SELECT * FROM utilizador;
     
 END$$
 
@@ -238,12 +325,11 @@ DROP TABLE IF EXISTS `alerta`;
 CREATE TABLE IF NOT EXISTS `alerta` (
   `IDAlerta` int(11) NOT NULL AUTO_INCREMENT,
   `DataHora` datetime NOT NULL,
-  `Sala` int(11) NOT NULL,
-  `Sensor` int(11) NOT NULL,
-  `Leitura` decimal(4,2) NOT NULL,
+  `Sala` int(11) DEFAULT NULL,
+  `Sensor` int(11) DEFAULT NULL,
+  `Leitura` decimal(4,2) DEFAULT NULL,
   `TipoAlerta` enum('Sem movimento','Temperatura','Capacidade da sala') NOT NULL,
   `Mensagem` varchar(100) NOT NULL,
-  `DataHoraEscrita` datetime NOT NULL,
   `IDExperiência` int(11) DEFAULT NULL,
   PRIMARY KEY (`IDAlerta`),
   KEY `ExperienciaFK` (`IDExperiência`)
@@ -385,6 +471,40 @@ INSERT INTO `utilizador` (`IDUtilizador`, `NomeUtilizador`, `TelefoneUtilizador`
 (1, 'admin', '987654321', '', 'admin@email.com', 0x61646d696e, 0),
 (2, 'Kevin', '987654322', 'Investigador', 'kevin@email.com', 0x6b6576696e, 0),
 (3, 'Investigador 1', '912345678', 'Investigador', 'investigador1@gmail.com', 0x9feb7a8a97596e9df8a464e5432ff7cf, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura stand-in para vista `v_expadecorrer`
+-- (Veja abaixo para a view atual)
+--
+DROP VIEW IF EXISTS `v_expadecorrer`;
+CREATE TABLE IF NOT EXISTS `v_expadecorrer` (
+`IDExperiência` int(11)
+,`Descrição` text
+,`Investigador` int(11)
+,`DataHoraCriaçãoExperiência` datetime
+,`NúmeroRatos` int(11)
+,`LimiteRatosSala` int(11)
+,`SegundosSemMovimento` int(11)
+,`TemperaturaMinima` decimal(4,2)
+,`TemperaturaMaxima` decimal(4,2)
+,`TolerânciaTemperatura` decimal(4,2)
+,`DataHoraInicioExperiência` datetime
+,`DataHoraFimExperiência` datetime
+,`SnoozeTime` int(11)
+,`RemocaoLogica` tinyint(1)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para vista `v_expadecorrer`
+--
+DROP TABLE IF EXISTS `v_expadecorrer`;
+
+DROP VIEW IF EXISTS `v_expadecorrer`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `experiência`.`IDExperiência` AS `IDExperiência`, `experiência`.`Descrição` AS `Descrição`, `experiência`.`Investigador` AS `Investigador`, `experiência`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `experiência`.`NúmeroRatos` AS `NúmeroRatos`, `experiência`.`LimiteRatosSala` AS `LimiteRatosSala`, `experiência`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `experiência`.`TemperaturaMinima` AS `TemperaturaMinima`, `experiência`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `experiência`.`TolerânciaTemperatura` AS `TolerânciaTemperatura`, `experiência`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `experiência`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `experiência`.`SnoozeTime` AS `SnoozeTime`, `experiência`.`RemocaoLogica` AS `RemocaoLogica` FROM `experiência` WHERE `experiência`.`DataHoraInicioExperiência` is not null AND `experiência`.`DataHoraFimExperiência` is nullnull  ;
 
 --
 -- Restrições para despejos de tabelas
