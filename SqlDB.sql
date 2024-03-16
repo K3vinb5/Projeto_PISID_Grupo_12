@@ -3,10 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 16-Mar-2024 às 02:17
--- Versão do servidor: 10.4.27-MariaDB
--- versão do PHP: 8.1.12
+-- Tempo de geração: 16-Mar-2024 às 13:10
+-- Versão do servidor: 10.4.25-MariaDB
+-- versão do PHP: 8.1.10
 
+SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -20,6 +21,7 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `grupo12_bd`
 --
+DROP DATABASE IF EXISTS `grupo12_bd`;
 CREATE DATABASE IF NOT EXISTS `grupo12_bd` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `grupo12_bd`;
 
@@ -322,18 +324,16 @@ DELIMITER ;
 --
 
 DROP TABLE IF EXISTS `alerta`;
-CREATE TABLE IF NOT EXISTS `alerta` (
-  `IDAlerta` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `alerta` (
+  `IDAlerta` int(11) NOT NULL,
   `DataHora` datetime NOT NULL,
   `Sala` int(11) DEFAULT NULL,
   `Sensor` int(11) DEFAULT NULL,
   `Leitura` decimal(4,2) DEFAULT NULL,
   `TipoAlerta` enum('Sem movimento','Temperatura','Capacidade da sala') NOT NULL,
   `Mensagem` varchar(100) NOT NULL,
-  `IDExperiência` int(11) DEFAULT NULL,
-  PRIMARY KEY (`IDAlerta`),
-  KEY `ExperienciaFK` (`IDExperiência`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `IDExperiência` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -342,8 +342,8 @@ CREATE TABLE IF NOT EXISTS `alerta` (
 --
 
 DROP TABLE IF EXISTS `experiência`;
-CREATE TABLE IF NOT EXISTS `experiência` (
-  `IDExperiência` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `experiência` (
+  `IDExperiência` int(11) NOT NULL,
   `Descrição` text DEFAULT NULL,
   `Investigador` int(11) NOT NULL,
   `DataHoraCriaçãoExperiência` datetime NOT NULL DEFAULT current_timestamp(),
@@ -356,10 +356,8 @@ CREATE TABLE IF NOT EXISTS `experiência` (
   `DataHoraInicioExperiência` datetime DEFAULT NULL,
   `DataHoraFimExperiência` datetime DEFAULT NULL,
   `SnoozeTime` int(11) NOT NULL,
-  `RemocaoLogica` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`IDExperiência`),
-  KEY `UtilizadoresFK` (`Investigador`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `RemocaoLogica` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Extraindo dados da tabela `experiência`
@@ -383,17 +381,14 @@ INSERT INTO `experiência` (`IDExperiência`, `Descrição`, `Investigador`, `Da
 --
 
 DROP TABLE IF EXISTS `mediçõespassagens`;
-CREATE TABLE IF NOT EXISTS `mediçõespassagens` (
-  `IDMedição` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `mediçõespassagens` (
+  `IDMedição` int(11) NOT NULL,
   `DataHora` datetime NOT NULL,
   `SalaOrigem` int(11) NOT NULL,
   `SalaDestino` int(11) NOT NULL,
   `IDExperiência` int(11) NOT NULL,
-  `IDMongo` varchar(50) NOT NULL,
-  PRIMARY KEY (`IDMedição`),
-  UNIQUE KEY `IDMongo` (`IDMongo`),
-  KEY `ExpPassagem` (`IDExperiência`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `IDMongo` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -402,14 +397,12 @@ CREATE TABLE IF NOT EXISTS `mediçõespassagens` (
 --
 
 DROP TABLE IF EXISTS `mediçõessalas`;
-CREATE TABLE IF NOT EXISTS `mediçõessalas` (
-  `IDMedição` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `mediçõessalas` (
+  `IDMedição` int(11) NOT NULL,
   `IDExperiência` int(11) NOT NULL,
   `NúmeroRatosFinal` int(11) NOT NULL,
-  `Sala` int(11) NOT NULL,
-  PRIMARY KEY (`IDMedição`),
-  KEY `ExpSalaFK` (`IDExperiência`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `Sala` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -418,17 +411,14 @@ CREATE TABLE IF NOT EXISTS `mediçõessalas` (
 --
 
 DROP TABLE IF EXISTS `mediçõestemperatura`;
-CREATE TABLE IF NOT EXISTS `mediçõestemperatura` (
-  `IDMedição` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `mediçõestemperatura` (
+  `IDMedição` int(11) NOT NULL,
   `DataHora` datetime NOT NULL,
   `Leitura` decimal(4,2) NOT NULL,
   `Sensor` int(11) NOT NULL,
   `IDExperiência` int(11) NOT NULL,
-  `IDMongo` varchar(50) NOT NULL,
-  PRIMARY KEY (`IDMedição`),
-  UNIQUE KEY `IDMongo` (`IDMongo`),
-  KEY `ExpTemperatura` (`IDExperiência`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `IDMongo` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -437,12 +427,11 @@ CREATE TABLE IF NOT EXISTS `mediçõestemperatura` (
 --
 
 DROP TABLE IF EXISTS `parâmetroadicionais`;
-CREATE TABLE IF NOT EXISTS `parâmetroadicionais` (
-  `IDParâmetro` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `parâmetroadicionais` (
+  `IDParâmetro` int(11) NOT NULL,
   `Designação` varchar(100) NOT NULL,
-  `Valor` int(11) NOT NULL,
-  PRIMARY KEY (`IDParâmetro`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `Valor` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -451,17 +440,15 @@ CREATE TABLE IF NOT EXISTS `parâmetroadicionais` (
 --
 
 DROP TABLE IF EXISTS `utilizador`;
-CREATE TABLE IF NOT EXISTS `utilizador` (
-  `IDUtilizador` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `utilizador` (
+  `IDUtilizador` int(11) NOT NULL,
   `NomeUtilizador` varchar(100) NOT NULL,
   `TelefoneUtilizador` varchar(12) NOT NULL,
   `TipoUtilizador` enum('Investigador','Administrador de Aplicação','System (WritemySQL)') NOT NULL,
   `EmailUtilizador` varchar(50) NOT NULL,
   `PasswordUtilizador` varbinary(200) NOT NULL,
-  `RemocaoLogica` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`IDUtilizador`),
-  UNIQUE KEY `EmailUtilizador` (`EmailUtilizador`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `RemocaoLogica` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Extraindo dados da tabela `utilizador`
@@ -479,7 +466,7 @@ INSERT INTO `utilizador` (`IDUtilizador`, `NomeUtilizador`, `TelefoneUtilizador`
 -- (Veja abaixo para a view atual)
 --
 DROP VIEW IF EXISTS `v_expadecorrer`;
-CREATE TABLE IF NOT EXISTS `v_expadecorrer` (
+CREATE TABLE `v_expadecorrer` (
 `IDExperiência` int(11)
 ,`Descrição` text
 ,`Investigador` int(11)
@@ -504,7 +491,107 @@ CREATE TABLE IF NOT EXISTS `v_expadecorrer` (
 DROP TABLE IF EXISTS `v_expadecorrer`;
 
 DROP VIEW IF EXISTS `v_expadecorrer`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `experiência`.`IDExperiência` AS `IDExperiência`, `experiência`.`Descrição` AS `Descrição`, `experiência`.`Investigador` AS `Investigador`, `experiência`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `experiência`.`NúmeroRatos` AS `NúmeroRatos`, `experiência`.`LimiteRatosSala` AS `LimiteRatosSala`, `experiência`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `experiência`.`TemperaturaMinima` AS `TemperaturaMinima`, `experiência`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `experiência`.`TolerânciaTemperatura` AS `TolerânciaTemperatura`, `experiência`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `experiência`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `experiência`.`SnoozeTime` AS `SnoozeTime`, `experiência`.`RemocaoLogica` AS `RemocaoLogica` FROM `experiência` WHERE `experiência`.`DataHoraInicioExperiência` is not null AND `experiência`.`DataHoraFimExperiência` is nullnull  ;
+CREATE VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiência` AS `IDExperiência`, `e`.`Descrição` AS `Descrição`, `e`.`Investigador` AS `Investigador`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`TolerânciaTemperatura` AS `TolerânciaTemperatura`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `e`.`SnoozeTime` AS `SnoozeTime`, `e`.`RemocaoLogica` AS `RemocaoLogica` FROM `experiência` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is null;
+
+--
+-- Índices para tabelas despejadas
+--
+
+--
+-- Índices para tabela `alerta`
+--
+ALTER TABLE `alerta`
+  ADD PRIMARY KEY (`IDAlerta`),
+  ADD KEY `ExperienciaFK` (`IDExperiência`);
+
+--
+-- Índices para tabela `experiência`
+--
+ALTER TABLE `experiência`
+  ADD PRIMARY KEY (`IDExperiência`),
+  ADD KEY `UtilizadoresFK` (`Investigador`);
+
+--
+-- Índices para tabela `mediçõespassagens`
+--
+ALTER TABLE `mediçõespassagens`
+  ADD PRIMARY KEY (`IDMedição`),
+  ADD UNIQUE KEY `IDMongo` (`IDMongo`),
+  ADD KEY `ExpPassagem` (`IDExperiência`);
+
+--
+-- Índices para tabela `mediçõessalas`
+--
+ALTER TABLE `mediçõessalas`
+  ADD PRIMARY KEY (`IDMedição`),
+  ADD KEY `ExpSalaFK` (`IDExperiência`);
+
+--
+-- Índices para tabela `mediçõestemperatura`
+--
+ALTER TABLE `mediçõestemperatura`
+  ADD PRIMARY KEY (`IDMedição`),
+  ADD UNIQUE KEY `IDMongo` (`IDMongo`),
+  ADD KEY `ExpTemperatura` (`IDExperiência`);
+
+--
+-- Índices para tabela `parâmetroadicionais`
+--
+ALTER TABLE `parâmetroadicionais`
+  ADD PRIMARY KEY (`IDParâmetro`);
+
+--
+-- Índices para tabela `utilizador`
+--
+ALTER TABLE `utilizador`
+  ADD PRIMARY KEY (`IDUtilizador`),
+  ADD UNIQUE KEY `EmailUtilizador` (`EmailUtilizador`);
+
+--
+-- AUTO_INCREMENT de tabelas despejadas
+--
+
+--
+-- AUTO_INCREMENT de tabela `alerta`
+--
+ALTER TABLE `alerta`
+  MODIFY `IDAlerta` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `experiência`
+--
+ALTER TABLE `experiência`
+  MODIFY `IDExperiência` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT de tabela `mediçõespassagens`
+--
+ALTER TABLE `mediçõespassagens`
+  MODIFY `IDMedição` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `mediçõessalas`
+--
+ALTER TABLE `mediçõessalas`
+  MODIFY `IDMedição` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `mediçõestemperatura`
+--
+ALTER TABLE `mediçõestemperatura`
+  MODIFY `IDMedição` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `parâmetroadicionais`
+--
+ALTER TABLE `parâmetroadicionais`
+  MODIFY `IDParâmetro` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `utilizador`
+--
+ALTER TABLE `utilizador`
+  MODIFY `IDUtilizador` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Restrições para despejos de tabelas
@@ -520,25 +607,26 @@ ALTER TABLE `alerta`
 -- Limitadores para a tabela `experiência`
 --
 ALTER TABLE `experiência`
-  ADD CONSTRAINT `UtilizadoresFK` FOREIGN KEY (`Investigador`) REFERENCES `utilizador` (`IDUtilizador`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `experiência_ibfk_1` FOREIGN KEY (`Investigador`) REFERENCES `utilizador` (`IDUtilizador`) ON UPDATE CASCADE;
 
 --
 -- Limitadores para a tabela `mediçõespassagens`
 --
 ALTER TABLE `mediçõespassagens`
-  ADD CONSTRAINT `ExpPassagem` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `mediçõespassagens_ibfk_1` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
 
 --
 -- Limitadores para a tabela `mediçõessalas`
 --
 ALTER TABLE `mediçõessalas`
-  ADD CONSTRAINT `ExpSalaFK` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `mediçõessalas_ibfk_1` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
 
 --
 -- Limitadores para a tabela `mediçõestemperatura`
 --
 ALTER TABLE `mediçõestemperatura`
-  ADD CONSTRAINT `ExpTemperatura` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `mediçõestemperatura_ibfk_1` FOREIGN KEY (`IDExperiência`) REFERENCES `experiência` (`IDExperiência`) ON UPDATE CASCADE;
+SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
