@@ -58,9 +58,9 @@ Esperar 1 a 2 segundos para iniciar próximo passo.
 Rodar os Clientes
 
 ```bash
-  mongosh --port 24017
+  mongosh --port 23017
   mongosh --port 25017
-  mongosh --port 26017
+  mongosh --port 27017
 ```
 
 Esperar um pouco para escolherem o servidor primário(automático) e depois carregar a tecla <Enter> nas janelas dos clientes, resultando "replicaPISID [direct: primary] test>" e anotar mentalmente a porta em <primary_port>.
@@ -93,11 +93,11 @@ Verificar se os registos estão a ser enviados (Executar no [direct: primary] e 
 
 Desligar o servidor primary com <primary_port>
 
-Porta Server db1: 24017 | Número server: 1
+Porta Server db1: 23017 | Número server: 1
 
 Porta Server db2: 25017 | Número server: 2
 
-Porta Server db3: 26017 | Número server: 3
+Porta Server db3: 27017 | Número server: 3
 
 Anotar mentalmente <numero_server>
 (Pode demorar um pouco, executar mais que uma vez o comando)
@@ -182,11 +182,11 @@ Verificar se os registos estão a ser enviados (Executar no [direct: primary] e 
 
 Desligar o servidor primary com <primary_port>
 
-Porta Server db1: 24017 | Número server: 1
+Porta Server db1: 23017 | Número server: 1
 
 Porta Server db2: 25017 | Número server: 2
 
-Porta Server db3: 23017 | Número server: 3
+Porta Server db3: 27017 | Número server: 3
 
 Anotar mentalmente <numero_server>
 (Pode demorar um pouco, executar mais que uma vez o comando)
