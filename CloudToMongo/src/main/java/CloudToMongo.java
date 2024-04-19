@@ -113,8 +113,8 @@ public class CloudToMongo implements MqttCallback {
                     JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
-        new CloudToMongo().connecCloud();
         new CloudToMongo().connectMongo();
+        new CloudToMongo().connecCloud();
     }
 
     /**
@@ -123,7 +123,7 @@ public class CloudToMongo implements MqttCallback {
     public void connecCloud() {
         int i = 1;
         try {
-            // i = new Random().nextInt(100000); // Comentar para testar
+            i = new Random().nextInt(100000); // Comentar para testar
             mqttclient = new MqttClient(cloud_server, "CloudToMongo_" + String.valueOf(i) + "_" + "pisid_grupo12");
             mqttclient.connect();
             mqttclient.setCallback(this);
