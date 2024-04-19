@@ -155,25 +155,6 @@ public class CloudToMongo implements MqttCallback {
         checkDataBaseState();
     }
 
-    private void checkDataBaseState() {
-        List<String> collectionsInDataBase = db.listCollectionNames().into(new ArrayList<String>());
-        mongo_collections.forEach(personalizedCollection -> {
-            if (collectionsInDataBase.contains(personalizedCollection.collectionName))
-                getAutoIncrement(personalizedCollection);
-            else
-                createCollection(personalizedCollection);
-        });
-    }
-
-    private void createCollection(CollectionPersonalized collection) {
-        db.getCollection(collection.collectionName).createIndex(new Document("Indice", -1));
-        collection.setInitialValue();
-    }
-
-    private void getAutoIncrement(CollectionPersonalized collection) { // TODO buscar autoincrement
-        System.err.println(db.getCollection(collection.collectionName).find().first());
-    }
-
     /**
      *
      * @param topic The topic that we have received
@@ -195,6 +176,7 @@ public class CloudToMongo implements MqttCallback {
 
             documentLabel.append(c.toString() + "\n");
         } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
             System.out.println(transformToAtributesToString(c.toString()));
         }
     }
@@ -222,6 +204,32 @@ public class CloudToMongo implements MqttCallback {
         String value = cutAttribute[1].trim();
         value = value.charAt(0) == '"' ? value : "\"" + value + "\"";
         return cutAttribute[0] + ": " + value;
+    }
+
+    private void checkDataBaseState() {
+        List<String> collectionsInDataBase = db.listCollectionNames().into(new ArrayList<String>());
+        mongo_collections.forEach(personalizedCollection -> {
+            if (!collectionsInDataBase.contains(personalizedCollection.collectionName))
+                createCollectionAndIndex(personalizedCollection);
+
+            else if (db.getCollection(personalizedCollection.collectionName).count() == 0)
+                personalizedCollection.setInitialValue();
+
+            else
+                getAutoIncrement(personalizedCollection);
+        });
+    }
+
+    private void createCollectionAndIndex(CollectionPersonalized collection) {
+        db.getCollection(collection.collectionName).createIndex(new Document("Indice", -1));
+        collection.setInitialValue();
+    }
+
+    private void getAutoIncrement(CollectionPersonalized collection) {
+        collection.setInitialValue(db.getCollection(collection.collectionName)
+                .aggregate(Arrays.asList(new Document("$project", new Document("Indice", 1)),
+                        new Document("$sort", new Document("Indice", -1)), new Document("$limit", 1)))
+                .first().getInteger("Indice") + 1);
     }
 
     private static void initCloudTopics(String property) {
