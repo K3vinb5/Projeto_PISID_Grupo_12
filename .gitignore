@@ -3,10 +3,11 @@
 *.class
 *.class
 
-# Ignorar Coisas no CouldToMongo
+# Ignorar Coisas no CloudToMongo
 CloudToMongo/target/
-CloudToMongo/pom.xml
+CloudToMongo/.idea/
 
 # Ignorar Coisas no Sensors Emulator
 Sensors Emulator/.idea/
 Sensors Emulator/.venv/
+

@@ -43,6 +43,16 @@ Alterar ficheiros <path_to_mongo>\replicaPISID\serverX\mongod.conf
     path:  <path_to_mongo>\replicaPISID\serverX\logs\mongo.log
 ```
 
+```bash
+  security:
+    authorization: "enabled"
+    keyFile: C:\replicaPISID\keyFile
+  ->
+  security:
+    authorization: "enabled"
+    keyFile: <path_to_mongo>\replicaPISID\keyFile
+```
+
 ## Testar no Geral
 
 Rodar os Servidores
@@ -58,9 +68,9 @@ Esperar 1 a 2 segundos para iniciar próximo passo.
 Rodar os Clientes
 
 ```bash
-  mongosh --port 23017
-  mongosh --port 25017
-  mongosh --port 27017
+  mongosh --port 23017 --username root --password root_grupo12
+  mongosh --port 25017 --username root --password root_grupo12
+  mongosh --port 27017 --username root --password root_grupo12
 ```
 
 Esperar um pouco para escolherem o servidor primário(automático) e depois carregar a tecla <Enter> nas janelas dos clientes, resultando "replicaPISID [direct: primary] test>" e anotar mentalmente a porta em <primary_port>.
