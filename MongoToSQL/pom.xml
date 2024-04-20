@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>pisid.cloudtomongo</groupId>
@@ -9,9 +9,47 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>22</maven.compiler.source>
+        <maven.compiler.target>22</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>local-lib</id>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>pisid</groupId>
+            <artifactId>com.google.code</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/gson-2.10.1.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>pisid</groupId>
+            <artifactId>mqttv3</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/org.eclipse.paho.client.mqttv3-1.1.0.jar</systemPath>
+        </dependency>
+        <!-- Probably not needed -->
+        <!-- <dependency>
+            <groupId>pisid</groupId>
+            <artifactId>bson</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/bson-3.10.1.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>pisid</groupId>
+            <artifactId>jackson-mapper</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/jackson-mapper-asl-1.5.0.jar</systemPath>
+        </dependency> -->
+    </dependencies>
 </project>
