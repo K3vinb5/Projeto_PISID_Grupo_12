@@ -1,56 +1,25 @@
-import org.bson.Document;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import com.mongodb.*;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-
-import javax.swing.*;
-import java.util.*;
-
-import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Properties;
+
+import javax.swing.JOptionPane;
+
+import org.bson.Document;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * @author Grupo12
  * @version 1.0
  */
-public class CloudToMongo implements MqttCallback {
-
-    /**
-     * CollectionPersonalized
-     */
-    public static class CollectionPersonalized {
-        private AtomicInteger autoIncrement;
-        private String collectionName;
-
-        CollectionPersonalized(String collectionName) {
-            this.collectionName = collectionName;
-        }
-
-        void setInitialValue() {
-            autoIncrement = new AtomicInteger(0);
-        }
-
-        void setInitialValue(int initalValue) {
-            autoIncrement = new AtomicInteger(initalValue);
-        }
-
-        public int getAutoIncrement() {
-            return autoIncrement.getAndIncrement();
-        }
-
-        public String getCollectionName() {
-            return collectionName;
-        }
-    }
+public class CloudToMongo {
 
     static MongoClient mongoClient;
     static MongoDatabase db;
@@ -62,41 +31,17 @@ public class CloudToMongo implements MqttCallback {
     static String mongo_replica = "";
     static String mongo_database = "";
     static String mongo_authentication = "";
-    static List<CollectionPersonalized> mongo_collections = new ArrayList<>();
-    static Map<String, Integer> cloud_topics = new HashMap<String, Integer>();
-    static JTextArea documentLabel = new JTextArea("\n");
-    MqttClient mqttclient;
-
-    /**
-     * Creates a basic GUI
-     */
-    private static void createWindow() {
-        JFrame frame = new JFrame("Cloud to Mongo");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel textLabel = new JLabel("Data from broker: ", SwingConstants.CENTER);
-        textLabel.setPreferredSize(new Dimension(600, 30));
-        JScrollPane scroll = new JScrollPane(documentLabel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scroll.setPreferredSize(new Dimension(600, 200));
-        JButton b1 = new JButton("Stop the program");
-        frame.getContentPane().add(textLabel, BorderLayout.PAGE_START);
-        frame.getContentPane().add(scroll, BorderLayout.CENTER);
-        frame.getContentPane().add(b1, BorderLayout.PAGE_END);
-        frame.setLocationRelativeTo(null);
-        frame.pack();
-        frame.setVisible(true);
-        b1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                System.exit(0);
-            }
-        });
-    }
+    static String enable_window = "";
+    static List<String> mongo_collections = new ArrayList<>();
+    static List<String> cloud_topics = new ArrayList<>();
+    static String javaPath = "java";
+    static String relativePath = "cloudToMongo.CloudToMongoWorker";
+    static String mongoURI = "";
 
     public static void main(String[] args) {
-        createWindow();
         try {
             Properties p = new Properties();
-            p.load(new FileInputStream("CloudToMongo.ini"));
+            p.load(new FileInputStream(System.getProperty("user.dir") + "\\..\\..\\CloudToMongo.ini"));
             mongo_address = p.getProperty("mongo_address");
             mongo_user = p.getProperty("mongo_user");
             mongo_password = p.getProperty("mongo_password");
@@ -105,41 +50,29 @@ public class CloudToMongo implements MqttCallback {
             mongo_host = p.getProperty("mongo_host");
             mongo_database = p.getProperty("mongo_database");
             mongo_authentication = p.getProperty("mongo_authentication");
-            initCloudTopics(p.getProperty("cloud_topics"));
-            initMongoCollections(p.getProperty("mongo_collections"));
+            cloud_topics = Arrays.stream(p.getProperty("cloud_topics").split(",")).toList();
+            mongo_collections = Arrays.stream(p.getProperty("mongo_collections").split(",")).toList();
+            enable_window = p.getProperty("enable_window");
         } catch (Exception e) {
             System.out.println("Error reading CloudToMongo.ini file " + e);
             JOptionPane.showMessageDialog(null, "The CloudToMongo.ini file wasn't found.", "CloudToMongo",
                     JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
-        new CloudToMongo().connectMongo();
-        new CloudToMongo().connecCloud();
-    }
 
-    /**
-     * Connects to Mqtt Broker
-     */
-    public void connecCloud() {
-        int i = 1;
-        try {
-            i = new Random().nextInt(100000); // Comentar para testar
-            mqttclient = new MqttClient(cloud_server, "CloudToMongo_" + String.valueOf(i) + "_" + "pisid_grupo12");
-            mqttclient.connect();
-            mqttclient.setCallback(this);
-            for (String cloud_topic : cloud_topics.keySet()) {
-                mqttclient.subscribe(cloud_topic);
-            }
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+        CloudToMongo c = new CloudToMongo();
+        c.connectMongo();
+
+        c.doAction();
+
+        c.closeMongo();
     }
 
     /**
      * Connects to Mongo DataBase specified in .ini file
      */
     public void connectMongo() {
-        String mongoURI = "mongodb://";
+        mongoURI = "mongodb://";
 
         if (mongo_authentication.equals("true"))
             mongoURI = mongoURI + mongo_user + ":" + mongo_password + "@";
@@ -151,94 +84,50 @@ public class CloudToMongo implements MqttCallback {
 
         mongoClient = new MongoClient(new MongoClientURI(mongoURI));
         db = mongoClient.getDatabase(mongo_database);
-
-        checkDataBaseState();
     }
 
-    /**
-     *
-     * @param topic The topic that we have received
-     * @param c     MqttMessage, it is already in a json format that is why we
-     *              create a document to using Json.parse
-     * @throws Exception
-     */
-    @Override
-    public void messageArrived(String topic, MqttMessage c) throws Exception {
-        try {
-            Document document_json = Document.parse(transformToAtributesToString(c.toString()));
+    public void closeMongo() {
+        db = null;
+        mongoClient.close();
+    }
 
-            CollectionPersonalized collectionPersonalized = mongo_collections.get(cloud_topics.get(topic));
-            document_json.put("Indice", collectionPersonalized.getAutoIncrement());
+    private void doAction() {
+        List<String> collectionsInDataBase = db.listCollectionNames().into(new ArrayList<String>());
+        for (int i = 0; i < mongo_collections.size(); i++) {
+            String topic = cloud_topics.get(i);
+            String collection = mongo_collections.get(i);
 
-            MongoCollection<Document> mongocol = db
-                    .getCollection(collectionPersonalized.collectionName);
-            mongocol.insertOne(document_json);
+            if (!collectionsInDataBase.contains(collection))
+                createCollectionAndIndex(collection);
 
-            documentLabel.append(c.toString() + "\n");
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            System.out.println(transformToAtributesToString(c.toString()));
+            runCloudToMongoWorker(
+                    new String[] { cloud_server, topic, mongoURI, mongo_database, collection, enable_window });
         }
     }
 
-    @Override
-    public void connectionLost(Throwable cause) {
+    private void createCollectionAndIndex(String collection) {
+        db.getCollection(collection).createIndex(new Document("Indice", -1));
     }
 
-    @Override
-    public void deliveryComplete(IMqttDeliveryToken token) {
+    public void runCloudToMongoWorker(String[] arguments) {
+        try {
+            String home = System.getProperty("user.home");
+            ProcessBuilder pb = new ProcessBuilder(javaPath, "-cp",
+                    ".;" + home
+                            + "\\.m2\\repository\\org\\eclipse\\paho\\org.eclipse.paho.client.mqttv3\\1.1.0\\org.eclipse.paho.client.mqttv3-1.1.0.jar;"
+                            + home
+                            + "\\.m2\\repository\\org\\mongodb\\mongo-java-driver\\3.6.3\\mongo-java-driver-3.6.3.jar;"
+                            + home + "\\.m2\\repository\\org\\mongodb\\bson\\3.10.1\\bson-3.10.1.jar",
+                    relativePath);
+            pb.directory(new File(System.getProperty("user.dir")));
+            pb.command().addAll(List.of(arguments));
+
+            pb.start();
+
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
     }
 
-    private String transformToAtributesToString(String json) {
-        String[] atributos = json.substring(1, json.length() - 1).split(",");
-        String result = "{";
-        int last = atributos.length - 1;
-        for (int i = 0; i < last; i++)
-            result += transformAtributeToString(atributos[i]) + ", ";
-
-        return result + transformAtributeToString(atributos[last]) + "}";
-    }
-
-    private String transformAtributeToString(String attribute) {
-        String[] cutAttribute = attribute.split(":", 2);
-        String value = cutAttribute[1].trim();
-        value = value.charAt(0) == '"' ? value : "\"" + value + "\"";
-        return cutAttribute[0] + ": " + value;
-    }
-
-    private void checkDataBaseState() {
-        List<String> collectionsInDataBase = db.listCollectionNames().into(new ArrayList<String>());
-        mongo_collections.forEach(personalizedCollection -> {
-            if (!collectionsInDataBase.contains(personalizedCollection.collectionName))
-                createCollectionAndIndex(personalizedCollection);
-
-            else if (db.getCollection(personalizedCollection.collectionName).count() == 0)
-                personalizedCollection.setInitialValue();
-
-            else
-                getAutoIncrement(personalizedCollection);
-        });
-    }
-
-    private void createCollectionAndIndex(CollectionPersonalized collection) {
-        db.getCollection(collection.collectionName).createIndex(new Document("Indice", -1));
-        collection.setInitialValue();
-    }
-
-    private void getAutoIncrement(CollectionPersonalized collection) {
-        collection.setInitialValue(db.getCollection(collection.collectionName)
-                .aggregate(Arrays.asList(new Document("$project", new Document("Indice", 1)),
-                        new Document("$sort", new Document("Indice", -1)), new Document("$limit", 1)))
-                .first().getInteger("Indice") + 1);
-    }
-
-    private static void initCloudTopics(String property) {
-        AtomicInteger counter = new AtomicInteger(-1);
-        Arrays.stream(property.split(",")).forEach(topic -> cloud_topics.put(topic, counter.incrementAndGet()));
-    }
-
-    private static void initMongoCollections(String property) {
-        Arrays.stream(property.split(","))
-                .forEach(collection -> mongo_collections.add(new CollectionPersonalized(collection)));
-    }
 }

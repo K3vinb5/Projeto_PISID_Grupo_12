@@ -6,6 +6,7 @@
 # Ignorar Coisas no CloudToMongo
 CloudToMongo/target/
 CloudToMongo/.idea/
+CloudToMongo/lib/
 
 # Ignorar Coisas no Sensors Emulator
 Sensors Emulator/.idea/
