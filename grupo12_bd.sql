@@ -20,8 +20,303 @@ SET time_zone = "+00:00";
 --
 -- Database: `grupo12_bd`
 --
+DROP DATABASE IF EXISTS `grupo12_bd`;
 CREATE DATABASE IF NOT EXISTS `grupo12_bd` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `grupo12_bd`;
+
+-- --------------------------------------------------------
+
+DELIMITER $$
+--
+-- Procedimentos
+--
+DROP PROCEDURE IF EXISTS `ApagarExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	UPDATE experiência e
+    SET e.RemocaoLogica = TRUE
+    WHERE e.IDExperiência = idExperiencia;
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `ApagarUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarUtilizador` (IN `email` VARCHAR(50))   BEGIN
+
+	UPDATE utilizador u
+    SET u.RemocaoLogica = TRUE
+    WHERE u.EmailUtilizador = email;
+    
+    SELECT ROW_COUNT();
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `AtribuirExperiênciaInvestigador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AtribuirExperiênciaInvestigador` (IN `idExperiencia` INT, IN `idInvestigador` INT)   BEGIN
+
+	DECLARE countExp, countUti, idExperienciaDecorrer INT;
+
+    SELECT COUNT(*) INTO countExp FROM experiência e WHERE e.IDExperiência = idExperiencia;
+    SELECT COUNT(*) INTO countUti FROM utilizador u WHERE u.IDUtilizador = idInvestigador;
+	
+    IF countExp>0 AND countUti>0 THEN
+    	CALL ObterExperienciaADecorrer(idExperienciaDecorrer);
+        IF idExperienciaDecorrer != idExperiencia THEN
+        	UPDATE experiência e
+            SET e.Investigador = idInvestigador
+            WHERE e.IDExperiência = idExperiencia;
+		END IF;
+	END IF;
+    
+    SELECT ROW_COUNT();
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `AtualizarNumRatosSala`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AtualizarNumRatosSala` (IN `salaOrigem` INT, IN `salaDestino` INT, IN `idExperiencia` INT)   BEGIN
+
+	DECLARE valorOrigem, valorDestino INT;
+    SELECT m.NúmeroRatosFinal INTO valorOrigem FROM mediçõessalas m WHERE m.IDExperiência = idExperiencia AND m.Sala = salaOrigem LIMIT 1;
+    SELECT m.NúmeroRatosFinal INTO valorDestino FROM mediçõessalas m WHERE m.IDExperiência = idExperiencia AND m.Sala = salaDestino LIMIT 1;
+    
+	UPDATE mediçõessalas
+    SET NúmeroRatosFinal = (valorOrigem - 1)
+    WHERE Sala = salaOrigem AND IDExperiência = idExperiencia;
+    
+    UPDATE mediçõessalas
+    SET NúmeroRatosFinal = (valorDestino + 1)
+    WHERE Sala = salaDestino AND IDExperiência = idExperiencia;
+
+END$$
+
+DROP PROCEDURE IF EXISTS `ComecarTerminarExperienca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ComecarTerminarExperienca` (IN `idExperiencia` INT)   BEGIN
+
+	DECLARE idExperienciaDecorrer INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+    
+    IF idExperienciaDecorrer IS NULL THEN
+    	UPDATE experiência e
+        SET e.DataHoraInicioExperiência = NOW()
+        WHERE e.IDExperiência = idExperiencia;
+	ELSE
+    	IF idExperiencia = idExperienciaDecorrer THEN
+        	UPDATE experiência e
+            SET e.DataHoraFimExperiência = NOW()
+            WHERE e.IDExperiência = idExperiencia;
+		END IF;
+	END IF;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `EditarExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` TEXT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `toleranciaTemperatura` DECIMAL(4,2), IN `snoozeTime` INT, IN `idExperiencia` INT)   BEGIN
+
+	DECLARE idExperienciaDecorrer INT;
+    CALL ObterExperienciaADecorrer(idExperienciaDecorrer);
+    
+    IF idExperiencia = idExperienciaDecorrer THEN
+    	UPDATE experiência e
+        SET e.Descrição = IFNULL(descricao, e.Descrição)
+        WHERE e.IDExperiência = idExperiencia;
+	ELSE
+    	IF numeroRatos>0 AND limiteRatosSala>0 AND segSemMovimento>0 AND toleranciaTemperatura>0 AND snoozeTime>0 AND temperaturaMaxima>temperaturaMinima THEN
+            UPDATE experiência e
+            SET e.Descrição = IFNULL(descricao, e.Descrição), 
+                e.NúmeroRatos = IFNULL(numeroRatos, e.NúmeroRatos), 
+                e.LimiteRatosSala = IFNULL(limiteRatosSala, e.LimiteRatosSala), 
+                e.SegundosSemMovimento = IFNULL(segSemMovimento, e.SegundosSemMovimento), 
+                e.TemperaturaMinima = IFNULL(temperaturaMinima, e.TemperaturaMinima), 
+                e.TemperaturaMaxima = IFNULL(temperaturaMaxima, e.TemperaturaMaxima), 
+                e.TolerânciaTemperatura = IFNULL(toleranciaTemperatura, e.TolerânciaTemperatura), 
+                e.SnoozeTime = IFNULL(snoozeTime, e.SnoozeTime)
+            WHERE e.IDExperiência = idExperiencia;
+        END IF;
+	END IF;
+    	
+
+END$$
+
+DROP PROCEDURE IF EXISTS `EditarUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarUtilizador` (IN `idInvestigador` INT, IN `email` VARCHAR(50), IN `nome` VARCHAR(100), IN `telefone` VARCHAR(12), IN `password` VARCHAR(100))   BEGIN
+
+	IF email IS NOT NULL THEN
+    	UPDATE utilizador u
+        SET u.EmailUtilizador = email
+        WHERE u.IDUtilizador = idInvestigador;
+	END IF;
+    
+    IF nome IS NOT NULL THEN
+    	UPDATE utilizador u
+        SET u.NomeUtilizador = nome
+        WHERE u.IDUtilizador = idInvestigador;
+	END IF;
+    
+    IF telefone IS NOT NULL THEN
+    	UPDATE utilizador u
+        SET u.TelefoneUtilizador = telefone
+        WHERE u.IDUtilizador = idInvestigador;
+	END IF;
+    
+    IF password IS NOT NULL THEN        
+    	UPDATE utilizador u
+        SET u.PasswordUtilizador = AES_ENCRYPT(password, 'grupo12_bd')
+        WHERE u.IDUtilizador = idInvestigador;
+	END IF;
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `IniciarSala`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `IniciarSala` (IN `idExperiencia` INT, IN `numeroRatos` INT, IN `sala` INT)   BEGIN
+
+	INSERT INTO mediçõessalas (IDExperiência, NúmeroRatosFinal, Sala)
+	VALUES (idExperiencia, numeroRatos, numeroRatos);
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirAlerta`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirAlerta` (IN `sala` INT, IN `sensor` INT, IN `leitura` DECIMAL(4,2), IN `tipoAlerta` VARCHAR(100), IN `mensagem` VARCHAR(100))   BEGIN
+
+	DECLARE idExperiencia INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+
+	IF sala IS NOT NULL THEN
+    	INSERT INTO alerta (DataHora, Sala, TipoAlerta, Mensagem, IDExperiência) 
+        VALUES (NOW(), sala, tipoAlerta, mensagem, idExperiencia);
+    ELSEIF sensor IS NOT NULL AND leitura IS NOT NULL THEN
+    	INSERT INTO alerta (DataHora, Sensor, Leitura, TipoAlerta, Mensagem, IDExperiência) 
+        VALUES (NOW(), sensor, leitura, tipoAlerta, mensagem, idExperiencia);
+	END IF;
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirExperiência`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirExperiência` (IN `descricao` TEXT, IN `idInvestigador` INT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `toleranciaTemperatura` DECIMAL(4,2), IN `snoozeTime` INT)   BEGIN
+
+	DECLARE counter, idExperiencia INT;
+	IF numeroRatos>0 AND limiteRatosSala>0 AND segSemMovimento>0 AND toleranciaTemperatura>0 AND snoozeTime>0 AND temperaturaMaxima>temperaturaMinima THEN
+    	INSERT INTO utilizador (Descrição, Investigador, DataHoraCriaçãoExperiência, NúmeroRatos, LimiteRatosSala, SegundosSemMovimento, TemperaturaMinima, TemperaturaMaxima, TolerânciaTemperatura, SnoozeTime)
+        VALUES (descricao, idInvestigador, NOW(), numeroRatos, limiteRatosSala, segSemMovimento, temperaturaMinima, temperaturaMaxima, toleranciaTemperatura, snoozeTime);
+        SELECT LAST_INSERT_ID() AS idExperiencia;
+
+        SET counter = 1;
+        CALL IniciarSala(idExperiencia, numeroRatos, counter);
+        WHILE counter <= 10 DO
+            CALL IniciarSala(idExperiencia, 0, counter);
+            SET counter = counter + 1;
+        END WHILE;
+    END IF;
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirMovimento`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirMovimento` (IN `dataHora` DATETIME, IN `salaOrigem` INT, IN `salaDestino` INT, IN `idMongo` INT)   BEGIN
+
+    DECLARE idExperiencia INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+
+    INSERT INTO mediçõespassagens (DataHora, SalaOrigem, SalaDestino, IDExperiencia, IDMongo)
+    VALUES (dataHora, salaOrigem, salaDestino, idExperiencia, idMongo);
+    
+    CALL AtualizarNumRatosSala(salaOrigem, salaDestino, idExperiencia);
+
+    SELECT ROW_COUNT(); -- 0- means no rows affected
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirTemperatura`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirTemperatura` (IN `dataHora` DATETIME, IN `leitura` DECIMAL(4,2), IN `sensor` INT, IN `idMongo` VARCHAR(50))   BEGIN
+
+    DECLARE idExperiencia INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+
+    INSERT INTO mediçõestemperatura (DataHora, Leitura, Sensor, IDExperiencia, IDMongo)
+    VALUES (dataHora, leitura, sensor, idExperiencia, idMongo);
+
+    SELECT ROW_COUNT(); -- 0- means no rows affected/nothing inserted 
+                      -- 1- means your row has been inserted successfully
+
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirUtilizador` (IN `email` VARCHAR(50), IN `nome` VARCHAR(100), IN `tipoUtilizador` VARCHAR(50), IN `telefone` VARCHAR(12))   BEGIN
+
+	Declare Encrypt varbinary(200);
+    SET Encrypt = AES_ENCRYPT('Pass123!', 'grupo12_bd');
+
+    INSERT INTO utilizador (NomeUtilizador, TelefoneUtilizador, TipoUtilizador, EmailUtilizador, PasswordUtilizador)
+    VALUES (nome, telefone, tipoUtilizador, email, Encrypt);
+    
+    SELECT ROW_COUNT();
+
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	SELECT * FROM experiência e WHERE e.IDExperiência = idExperiencia;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterExperienciaADecorrer`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperienciaADecorrer` ()   BEGIN
+
+    SELECT IDExperiência FROM v_expadecorrer LIMIT 1;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterInfoUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterInfoUtilizador` (IN `idUtilizador` INT)   BEGIN
+
+	SELECT * FROM utilizador u WHERE u.IDUtilizador = idUtilizador;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterListaExperiencias`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterListaExperiencias` ()   BEGIN
+
+	SELECT * FROM experiência;
+
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterPassagensExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterPassagensExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	SELECT * FROM mediçõespassagens m WHERE m.IDExperiência = idExperiencia;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterRatosSalasExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterRatosSalasExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	SELECT * FROM mediçõessalas m WHERE m.IDExperiência = idExperiencia;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterTemperaturasExperiencia`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterTemperaturasExperiencia` (IN `idExperiencia` INT)   BEGIN
+
+	SELECT * FROM mediçõestemperatura m WHERE m.IDExperiência = idExperiencia;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS `ObterUtilizadores`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterUtilizadores` ()   BEGIN
+
+	SELECT * FROM utilizador;
+    
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
