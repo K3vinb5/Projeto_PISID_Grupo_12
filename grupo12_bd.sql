@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 22, 2024 at 01:18 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Generation Time: Apr 22, 2024 at 11:38 PM
+-- Server version: 10.4.27-MariaDB
+-- PHP Version: 8.1.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -110,31 +110,46 @@ END$$
 DROP PROCEDURE IF EXISTS `EditarExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` TEXT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `temperaturaAvisoMaximo` DECIMAL(4,2), IN `temperaturaAvisoMinimo` DECIMAL(4.2), IN `idExperiencia` INT)   BEGIN
 
-    DECLARE inicioExp DATETIME;
-
-    IF NOT EXISTS (SELECT * FROM experiencia WHERE IDExperiência = idExperiencia) THEN
+    SET @sql = 'SELECT COUNT(*) INTO @expExists FROM experiencia WHERE IDExperiência = ?';
+    PREPARE stmt FROM @sql;
+    EXECUTE stmt USING idExperiencia;
+    DEALLOCATE PREPARE stmt;
+    
+    IF @expExists <= 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Está a tentar editar uma experiencia que não existe!';
     END IF;
 
-    SELECT DataHoraInicioExperiência INTO inicioExp FROM experiencia WHERE IDExperiência = idExperiencia;
+    SET @sql = 'SELECT DataHoraInicioExperiência INTO @inicioExp FROM experiencia WHERE IDExperiência = ?';
+    PREPARE stmt FROM @sql;
+    EXECUTE stmt USING idExperiencia;
+    DEALLOCATE PREPARE stmt;
     
-    IF inicioExp IS NOT NULL THEN
-        UPDATE experiência e
+    IF @inicioExp IS NOT NULL THEN
+        UPDATE experiencia e
         SET e.Descrição = IFNULL(descricao, e.Descrição)
         WHERE e.IDExperiência = idExperiencia;
     ELSE
-        UPDATE experiência e
+        UPDATE experiencia e
         SET e.Descrição = IFNULL(descricao, e.Descrição), 
             e.NúmeroRatos = IFNULL(numeroRatos, e.NúmeroRatos), 
             e.LimiteRatosSala = IFNULL(limiteRatosSala, e.LimiteRatosSala), 
             e.SegundosSemMovimento = IFNULL(segSemMovimento, e.SegundosSemMovimento), 
             e.TemperaturaMinima = IFNULL(temperaturaMinima, e.TemperaturaMinima), 
             e.TemperaturaMaxima = IFNULL(temperaturaMaxima, e.TemperaturaMaxima), 
-            e.TolerânciaTemperatura = IFNULL(toleranciaTemperatura, e.TolerânciaTemperatura), 
-            e.SnoozeTime = IFNULL(snoozeTime, e.SnoozeTime)
+            e.TemperaturaAvisoMaximo = IFNULL(temperaturaAvisoMaximo, e.TemperaturaAvisoMaximo), 
+            e.TemperaturaAvisoMinimo = IFNULL(temperaturaAvisoMinimo, e.TemperaturaAvisoMinimo)
         WHERE e.IDExperiência = idExperiencia;
     END IF;
     
+END$$
+
+DROP PROCEDURE IF EXISTS `EditarNumRatosSala`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarNumRatosSala` (IN `idExperiencia` INT, IN `numeroRatos` INT, IN `sala` INT)   BEGIN
+
+	UPDATE medicoessala m
+    SET m.NúmeroRatosFinal = IFNULL(numeroRatos, m.NúmeroRatosFinal)
+    WHERE m.IDExperiência = idExperiencia AND m.Sala = sala;
+
 END$$
 
 DROP PROCEDURE IF EXISTS `EditarUtilizador`$$
@@ -171,10 +186,8 @@ END$$
 DROP PROCEDURE IF EXISTS `IniciarSala`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `IniciarSala` (IN `idExperiencia` INT, IN `numeroRatos` INT, IN `sala` INT)   BEGIN
 
-	INSERT INTO mediçõessalas (IDExperiência, NúmeroRatosFinal, Sala)
-	VALUES (idExperiencia, numeroRatos, numeroRatos);
-    
-    SELECT ROW_COUNT();
+	INSERT INTO medicoessala (IDExperiência, NúmeroRatosFinal, Sala)
+	VALUES (idExperiencia, numeroRatos, sala);
 
 END$$
 
@@ -197,7 +210,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirAlerta` (IN `sala` INT, IN `
 END$$
 
 DROP PROCEDURE IF EXISTS `InserirExperiencia`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirExperiencia` (IN `descricao` TEXT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `temperaturaAvisoMaximo` DECIMAL(4,2), IN `temperaturaAvisoMinimo` DECIMAL(4.2))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirExperiencia` (IN `descricao` TEXT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `temperaturaAvisoMaximo` DECIMAL(4,2), IN `temperaturaAvisoMinimo` DECIMAL(4.2), IN `emailInvestigador` VARCHAR(200))   BEGIN
 
     DECLARE utilizador VARCHAR(200); 
     SELECT SUBSTRING_INDEX(user(), '@', 2) INTO utilizador;
@@ -206,10 +219,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirExperiencia` (IN `descricao`
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ocorreu um erro ao criar a experiência!';
     END IF;
     
-    INSERT INTO experiencia (Descrição, DataHoraCriaçãoExperiência, NúmeroRatos, LimiteRatosSala, SegundosSemMovimento, TemperaturaMinima, TemperaturaMaxima, TemperaturaAvisoMaximo, TemperaturaAvisoMinimo, Investigador)
-    VALUES (descricao, NOW(), numeroRatos, limiteRatosSala, segSemMovimento, temperaturaMinima, temperaturaMaxima, temperaturaAvisoMaximo, temperaturaAvisoMinimo, utilizador);
-    
-    SELECT ROW_COUNT();
+    IF NOT (emailInvestigador IS NULL OR emailInvestigador = '') THEN
+    	INSERT INTO experiencia (Descrição, DataHoraCriaçãoExperiência, NúmeroRatos, LimiteRatosSala, SegundosSemMovimento, TemperaturaMinima, TemperaturaMaxima, TemperaturaAvisoMaximo, TemperaturaAvisoMinimo, Investigador)
+    	VALUES (descricao, NOW(), numeroRatos, limiteRatosSala, segSemMovimento, temperaturaMinima, temperaturaMaxima, temperaturaAvisoMaximo, temperaturaAvisoMinimo, emailInvestigador);
+    ELSE
+    	INSERT INTO experiencia (Descrição, DataHoraCriaçãoExperiência, NúmeroRatos, LimiteRatosSala, SegundosSemMovimento, TemperaturaMinima, TemperaturaMaxima, TemperaturaAvisoMaximo, TemperaturaAvisoMinimo, Investigador)
+    	VALUES (descricao, NOW(), numeroRatos, limiteRatosSala, segSemMovimento, temperaturaMinima, temperaturaMaxima, temperaturaAvisoMaximo, temperaturaAvisoMinimo, utilizador);
+    END IF;
 
 END$$
 
@@ -243,46 +259,49 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirTemperatura` (IN `dataHora` 
 END$$
 
 DROP PROCEDURE IF EXISTS `InserirUtilizador`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirUtilizador` (IN `email` VARCHAR(200), IN `nome` VARCHAR(100), IN `tipoUtilizador` ENUM('Investigador','AdministradorAplicacao','WriteMySql'), IN `telefone` VARCHAR(12))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirUtilizador` (IN `emailUtilizador` VARCHAR(200), IN `nomeUtilizador` VARCHAR(100), IN `tipoUtilizador` ENUM('Investigador','AdministradorAplicacao','WriteMySql'), IN `telefoneUtilizador` VARCHAR(12))   BEGIN
 
     DECLARE email_pattern VARCHAR(255);
     DECLARE phone_pattern VARCHAR(255);
-    DECLARE user_count INT;
+    DECLARE user_exists INT;
         
-    SET email_pattern = '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}$';
+    SET email_pattern = '^[A-Za-z0-9.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$';
     SET phone_pattern = '^9[1236][0-9]{7}$';
+    SELECT COUNT(*) INTO user_exists FROM utilizador WHERE Email = emailUtilizador;
 
-    IF email NOT RLIKE email_pattern THEN
+    IF emailUtilizador NOT RLIKE email_pattern THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email inválido!';
     END IF;
     
-    IF telefone NOT RLIKE phone_pattern THEN
+    IF telefoneUtilizador NOT RLIKE phone_pattern THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Telefone inválido!';
     END IF;
     
-    SELECT COUNT(*) INTO user_count FROM utilizador WHERE Email = email;
-    
-    IF user_count > 0 THEN
+    IF NOT (tipoUtilizador LIKE 'Investigador' OR tipoUtilizador LIKE 'AdministradorAplicacao' OR tipoUtilizador LIKE 'WriteMySql') THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tipo de utilizador inválido!';
+    END IF;
+
+    IF user_exists > 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Utilizador já existe!';
     END IF;
     
-    SET @sql = CONCAT('CREATE USER ', QUOTE(email), '@', QUOTE('localhost'), ' IDENTIFIED BY ', QUOTE('Pass123!'));
+    SET @sql = CONCAT('CREATE USER ', QUOTE(emailUtilizador), '@', QUOTE('localhost'), ' IDENTIFIED BY ', QUOTE('Pass123!'));
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
     
-    SET @sql = CONCAT('GRANT ', tipoUtilizador, ' TO ', QUOTE(email), '@', QUOTE('localhost'));
+    SET @sql = CONCAT('GRANT ', tipoUtilizador, ' TO ', QUOTE(emailUtilizador), '@', QUOTE('localhost'));
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
     
-    SET @sql = CONCAT('SET DEFAULT ROLE ', tipoUtilizador, ' FOR ', QUOTE(email), '@', QUOTE('localhost'));
+    SET @sql = CONCAT('SET DEFAULT ROLE ', tipoUtilizador, ' FOR ', QUOTE(emailUtilizador), '@', QUOTE('localhost'));
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
     INSERT INTO utilizador (Nome, Telefone, Email)
-    VALUES (nome, telefone, email);
+    VALUES (nomeUtilizador, telefoneUtilizador, emailUtilizador);
     
     SELECT ROW_COUNT();
 
@@ -390,7 +409,18 @@ CREATE TABLE IF NOT EXISTS `experiencia` (
   `Investigador` varchar(200) NOT NULL,
   PRIMARY KEY (`IDExperiência`),
   KEY `experiência_ibfk_1` (`Investigador`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `experiencia`
+--
+
+INSERT INTO `experiencia` (`IDExperiência`, `Descrição`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TemperaturaAvisoMaximo`, `TemperaturaAvisoMinimo`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `RemocaoLogica`, `Investigador`) VALUES
+(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, '10.00', '25.00', '15.00', '11.00', NULL, NULL, 0, 'pedro@iscte.pt'),
+(25, 'teste', '2024-04-22 17:56:21', 50, 8, 30, '5.00', '20.00', '18.00', '7.00', NULL, NULL, 0, 'pedro@iscte.pt'),
+(26, 'Experiencia editada', '2024-04-22 21:47:49', 10, 2, 10, '19.00', '24.00', '24.00', '19.00', NULL, NULL, 0, 'pedro@iscte.pt'),
+(27, 'teste 1', '2024-04-22 22:35:13', 10, 2, 10, '15.00', '25.00', '20.00', '19.00', NULL, NULL, 0, 'fatima@iscte.pt'),
+(28, 'Experiencia com email NULL', '2024-04-22 22:35:55', 10, 2, 10, '15.00', '25.00', '20.00', '19.00', NULL, NULL, 0, 'fatima@iscte.pt');
 
 --
 -- Triggers `experiencia`
@@ -399,12 +429,14 @@ DROP TRIGGER IF EXISTS `ExperienciaInsertAfter`;
 DELIMITER $$
 CREATE TRIGGER `ExperienciaInsertAfter` AFTER INSERT ON `experiencia` FOR EACH ROW BEGIN
 
-	DECLARE counter INT;
-    SET counter = 1;
+	DECLARE counter INT DEFAULT 1;
+    
 	CALL IniciarSala(new.IDExperiência , new.NúmeroRatos, counter);
-    WHILE counter <= 10 DO
+    SELECT counter + 1 INTO counter;
+    
+    WHILE counter < 10 DO
     	CALL IniciarSala(new.IDExperiência, 0, counter);
-        SET counter = counter + 1;
+        SELECT counter + 1 INTO counter;
 	END WHILE;
 
 END
@@ -417,8 +449,14 @@ CREATE TRIGGER `ExperienciaInsertBefore` BEFORE INSERT ON `experiencia` FOR EACH
 	DECLARE utilizador VARCHAR(200); 
     SELECT SUBSTRING_INDEX(user(), '@', 2) INTO utilizador;
 	IF NOT new.Investigador = utilizador THEN
-    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Está a tentar inserir uma experiência por outro utilizador!';
+    	IF NOT EXISTS (SELECT * FROM mysql.roles_mapping WHERE User = utilizador AND Host = 'localhost' AND Role = 'AdministradorAplicacao') THEN
+    		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Está a tentar inserir uma experiência por outro utilizador!';
+		END IF;
     END IF;
+    
+    IF NOT EXISTS (SELECT * FROM mysql.roles_mapping WHERE User = new.Investigador AND Host = 'localhost' AND Role = 'Investigador') THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Deve atribuir um investigador a uma experiencia!';
+	END IF;
     
     IF NOT new.NúmeroRatos > 0 OR new.NúmeroRatos IS NULL THEN
     	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'O número de ratos não pode ser menor ou igual a 0!';
@@ -456,6 +494,14 @@ CREATE TRIGGER `ExperienciaInsertBefore` BEFORE INSERT ON `experiencia` FOR EACH
     	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A temperatura de aviso minimo não pode ser superior à temperatura de aviso máximo!';
     END IF;
     
+    IF new.TemperaturaAvisoMaximo > new.TemperaturaMaxima THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A temperatura de aviso maximo não pode ser superior à temperatura maxima!';
+    END IF;
+    
+    IF new.TemperaturaAvisoMinimo < new.TemperaturaMinima THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A temperatura de aviso minimo não pode ser inferior à temperatura minima!';
+    END IF;
+    
     IF new.DataHoraInicioExperiência IS NOT NULL THEN
     	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Só pode iniciar uma experiência depois de estar criada!';
     END IF;
@@ -468,8 +514,21 @@ CREATE TRIGGER `ExperienciaInsertBefore` BEFORE INSERT ON `experiencia` FOR EACH
     	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Não é possivel fazer uma remoção lógica de uma experiência, antes dessa estar criada!';
     END IF;
     
-    SET new.DataHoraCriaçãoExperiência = NOW();
+    IF new.DataHoraCriaçãoExperiência < (NOW() - INTERVAL 5 MINUTE) OR new.DataHoraCriaçãoExperiência > (NOW() + INTERVAL 5 MINUTE) THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A data de criação não deve ser alterada!';
+    END IF;
     
+END
+$$
+DELIMITER ;
+DROP TRIGGER IF EXISTS `ExperienciaUpdateAfter`;
+DELIMITER $$
+CREATE TRIGGER `ExperienciaUpdateAfter` AFTER UPDATE ON `experiencia` FOR EACH ROW BEGIN
+
+	IF 	old.NúmeroRatos <> new.NúmeroRatos THEN
+    	CALL EditarNumRatosSala(new.IDExperiência, new.NúmeroRatos, 1);
+    END IF;
+
 END
 $$
 DELIMITER ;
@@ -480,8 +539,10 @@ CREATE TRIGGER `ExperienciaUpdateBefore` BEFORE UPDATE ON `experiencia` FOR EACH
 	DECLARE utilizador VARCHAR(200); 
     SELECT SUBSTRING_INDEX(user(), '@', 2) INTO utilizador;
 	IF NOT new.Investigador = utilizador THEN
-    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Está a tentar editar uma experiência de outro utilizador!';
-    END IF;    
+    	IF NOT EXISTS (SELECT * FROM mysql.roles_mapping WHERE User = utilizador AND Host = 'localhost' AND Role = 'AdministradorAplicacao') THEN
+    		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Está a tentar editar uma experiência de outro utilizador!';
+		END IF;
+	END IF;
     
     IF old.DataHoraInicioExperiência IS NOT NULL THEN
     	IF old.DataHoraInicioExperiência <> new.DataHoraInicioExperiência THEN
@@ -551,6 +612,14 @@ CREATE TRIGGER `ExperienciaUpdateBefore` BEFORE UPDATE ON `experiencia` FOR EACH
     	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A temperatura de aviso minimo não pode ser superior à temperatura de aviso máximo!';
     END IF;
     
+    IF new.TemperaturaAvisoMaximo > new.TemperaturaMaxima THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A temperatura de aviso maximo não pode ser superior à temperatura maxima!';
+    END IF;
+    
+    IF new.TemperaturaAvisoMinimo < new.TemperaturaMinima THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A temperatura de aviso minimo não pode ser inferior à temperatura minima!';
+    END IF;
+    
 END
 $$
 DELIMITER ;
@@ -605,7 +674,60 @@ CREATE TABLE IF NOT EXISTS `medicoessala` (
   `Sala` int(11) NOT NULL,
   PRIMARY KEY (`IDMedição`),
   KEY `ExpSalaFK` (`IDExperiência`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `medicoessala`
+--
+
+INSERT INTO `medicoessala` (`IDMedição`, `IDExperiência`, `NúmeroRatosFinal`, `Sala`) VALUES
+(1, 24, 44, 1),
+(2, 24, 0, 2),
+(3, 24, 0, 3),
+(4, 24, 0, 4),
+(5, 24, 0, 5),
+(6, 24, 0, 6),
+(7, 24, 0, 7),
+(8, 24, 0, 8),
+(9, 24, 0, 9),
+(10, 24, 0, 10),
+(12, 25, 50, 1),
+(13, 25, 0, 2),
+(14, 25, 0, 3),
+(15, 25, 0, 4),
+(16, 25, 0, 5),
+(17, 25, 0, 6),
+(18, 25, 0, 7),
+(19, 25, 0, 8),
+(20, 25, 0, 9),
+(21, 25, 0, 10),
+(22, 26, 10, 1),
+(23, 26, 0, 2),
+(24, 26, 0, 3),
+(25, 26, 0, 4),
+(26, 26, 0, 5),
+(27, 26, 0, 6),
+(28, 26, 0, 7),
+(29, 26, 0, 8),
+(30, 26, 0, 9),
+(31, 27, 10, 1),
+(32, 27, 0, 2),
+(33, 27, 0, 3),
+(34, 27, 0, 4),
+(35, 27, 0, 5),
+(36, 27, 0, 6),
+(37, 27, 0, 7),
+(38, 27, 0, 8),
+(39, 27, 0, 9),
+(40, 28, 10, 1),
+(41, 28, 0, 2),
+(42, 28, 0, 3),
+(43, 28, 0, 4),
+(44, 28, 0, 5),
+(45, 28, 0, 6),
+(46, 28, 0, 7),
+(47, 28, 0, 8),
+(48, 28, 0, 9);
 
 -- --------------------------------------------------------
 
@@ -633,13 +755,11 @@ CREATE TABLE IF NOT EXISTS `medicoestemperatura` (
 DROP TABLE IF EXISTS `parametroadicional`;
 CREATE TABLE IF NOT EXISTS `parametroadicional` (
   `IDParâmetro` int(11) NOT NULL AUTO_INCREMENT,
-  `EmailUtilizador` varchar(200) NOT NULL,
   `NrRegistosOutlierTemperatura` int(11) NOT NULL DEFAULT 25,
   `NrRegistosAlertaTemperatura` int(11) NOT NULL DEFAULT 15,
   `ControloSpamTemperatura` int(11) NOT NULL DEFAULT 30,
   `ControloSpamMovimentos` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`IDParâmetro`),
-  KEY `EmailUtilizador` (`EmailUtilizador`)
+  PRIMARY KEY (`IDParâmetro`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- --------------------------------------------------------
@@ -656,6 +776,15 @@ CREATE TABLE IF NOT EXISTS `utilizador` (
   `RemocaoLogica` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`Email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `utilizador`
+--
+
+INSERT INTO `utilizador` (`Email`, `Nome`, `Telefone`, `RemocaoLogica`) VALUES
+('admin@iscte.pt', 'Admin', '921345678', 0),
+('fatima@iscte.pt', 'Fatima', '918649728', 0),
+('pedro@iscte.pt', 'Pedro', '912345678', 0);
 
 -- --------------------------------------------------------
 
@@ -687,7 +816,7 @@ CREATE TABLE IF NOT EXISTS `v_expadecorrer` (
 DROP TABLE IF EXISTS `v_expadecorrer`;
 
 DROP VIEW IF EXISTS `v_expadecorrer`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiência` AS `IDExperiência`, `e`.`Descrição` AS `Descrição`, `e`.`Investigador` AS `Investigador`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `e`.`RemocaoLogica` AS `RemocaoLogica` FROM `experiencia` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is null ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiência` AS `IDExperiência`, `e`.`Descrição` AS `Descrição`, `e`.`Investigador` AS `Investigador`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `e`.`RemocaoLogica` AS `RemocaoLogica` FROM `experiencia` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is nullnull  ;
 
 --
 -- Constraints for dumped tables
@@ -728,12 +857,6 @@ ALTER TABLE `medicoessala`
 --
 ALTER TABLE `medicoestemperatura`
   ADD CONSTRAINT `medicoestemperatura_ibfk_1` FOREIGN KEY (`IDExperiência`) REFERENCES `experiencia` (`IDExperiência`) ON UPDATE CASCADE;
-
---
--- Constraints for table `parametroadicional`
---
-ALTER TABLE `parametroadicional`
-  ADD CONSTRAINT `parametroadicional_ibfk_1` FOREIGN KEY (`EmailUtilizador`) REFERENCES `utilizador` (`Email`) ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
