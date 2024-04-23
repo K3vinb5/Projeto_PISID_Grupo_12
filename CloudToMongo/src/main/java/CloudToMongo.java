@@ -41,7 +41,7 @@ public class CloudToMongo {
     public static void main(String[] args) {
         try {
             Properties p = new Properties();
-            p.load(new FileInputStream(System.getProperty("user.dir") + "\\..\\..\\CloudToMongo.ini"));
+            p.load(new FileInputStream("./CloudToMongo.ini"));
             mongo_address = p.getProperty("mongo_address");
             mongo_user = p.getProperty("mongo_user");
             mongo_password = p.getProperty("mongo_password");
@@ -61,11 +61,12 @@ public class CloudToMongo {
         }
 
         CloudToMongo c = new CloudToMongo();
+        System.err.println("Conecting to Mongo...");
         c.connectMongo();
-
+        System.err.println("Starting Mains...");
         c.doAction();
-
-        c.closeMongo();
+        System.err.println("Closing Mongo Clients..."); //@K3vinb5: What?! Why would you close it?!
+        //c.closeMongo();
     }
 
     /**
@@ -119,6 +120,8 @@ public class CloudToMongo {
                             + "\\.m2\\repository\\org\\mongodb\\mongo-java-driver\\3.6.3\\mongo-java-driver-3.6.3.jar;"
                             + home + "\\.m2\\repository\\org\\mongodb\\bson\\3.10.1\\bson-3.10.1.jar",
                     relativePath);
+            //TODO fix this mess
+            //ProcessBuilder pb = new ProcessBuilder(javaPath, "-jar", "./target/CloudToMongoWorker.jar");
             pb.directory(new File(System.getProperty("user.dir")));
             pb.command().addAll(List.of(arguments));
 
