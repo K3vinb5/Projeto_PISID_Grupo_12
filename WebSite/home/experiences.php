@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['id'])) {
+if (!isset($_SESSION['email'])) {
     // Redirect to the login page or display an error message
     header('Location: ../login/index.php');
     exit();
@@ -11,19 +11,37 @@ if (!isset($_SESSION['id'])) {
  * @param string $sql sql query
  * @return void html table from the databse table
  */
-function table(mysqli $conn, string $sql)
+function table(mysqli $conn, string $sql, bool $mine)
 {
-    global $num;
     $result = mysqli_query($conn, $sql);
     if ($result->num_rows > 0) {
-        echo "<table>\n<tr><th>ID</th><th>Investigador</th><th>Número Ratos</th><th>Limite Ratos</th><th>Limite Segundos</th><th>Temperatura Ideal</th><th>Variação Temperatura</th><th>Tolerância Temperatura</th><th>Início</th><th>Fim</th></tr>\n";
+        echo "<table>\n<tr><th>ID</th><th>Investigador</th><th>Número Ratos</th><th>Limite Ratos</th><th>Limite Segundos</th><th>Temperatura Minima</th><th>Temperatura Maxima</th><th>Temperatura Maxima Aviso</th><th>Temperatura Minima Aviso</th><th>Início</th><th>Fim</th></tr>\n";
 
         // Output data of each row
         $index = 0;
+        $state = "";
+        $buttonText = "Edit";
         while ($row = $result->fetch_assoc()) {
-            echo "<tr><td>" . $row["IDExperiência"] . "</td><td>" . $row["Investigador"] . "</td><td>" . $row["NúmeroRatos"] . "</td><td>" . $row["LimiteRatosSala"] . "</td><td>" . $row["SegundosSemMovimento"] . "</td><td>" . $row["TemperaturaIdeal"] . "</td><td>" . $row["VariaçãoTemperaturaMáxima"] . "</td><td>" . $row["TolerânciaTemperatura"] . "</td><td>" . $row["DataHoraInicioExperiência"] . "</td><td>" . $row["DataHoraFimExperiência"] . "</td><td><a href='experience_insert_edit.php?unique_id=" . $num . "&experience_type=edit'><button>Editar</button></a></td></tr>\n";
-            $index ++;
-            //TODO save $row elements in CurrentglobalNum_NAME
+            if ($row["RemocaoLogica"] == "0"){
+                if ($row["DataHoraInicioExperiência"] == "" && $row["DataHoraFimExperiência"] == ""){
+                    //Experience not started
+                    $state = "notStarted";
+                }else if($row["DataHoraInicioExperiência"] != "" && $row["DataHoraFimExperiência"] = ""){
+                    //Experience ongoing
+                    $state = "onGoing";
+                }else{
+                    //Experience ended
+                    $state = "ended";
+                }
+
+                if (!$mine){
+                    $buttonText = "Details";
+                }else if($state != "notStarted"){
+                    $buttonText = "Edit";
+                }
+                echo "<tr><td>" . $row["IDExperiência"] . "</td><td>" . $row["Investigador"] . "</td><td>" . $row["NúmeroRatos"] . "</td><td>" . $row["LimiteRatosSala"] . "</td><td>" . $row["SegundosSemMovimento"] . "</td><td>" . $row["TemperaturaMinima"] . "</td><td>" . $row["TemperaturaMaxima"] . "</td><td>" . $row["TemperaturaAvisoMaximo"] . "</td><td>" . $row["TemperaturaAvisoMinimo"] . "</td><td>" . $row["DataHoraInicioExperiência"] . "</td><td>" . $row["DataHoraFimExperiência"] . "</td><td><a href='experience_insert_edit.php?type=edit&id=" . $row["IDExperiência"] . "&state=" . $state . "'><button>" . $buttonText . "</button></a></td></tr>\n";
+                $index ++;
+            }
         }
 
         echo "</table>\n";
@@ -47,29 +65,29 @@ function table(mysqli $conn, string $sql)
 <body>
     <nav>
         <div class="main-nav-container">
-            <a href="home.php">Home</a>
             <a href="experiences.php">Experiencias</a>
+            <a href="experience_insert_edit.php?type=create">Adicionar Experiencia</a>
         </div>
         <div class="logout-container">
+            <a href="../login/index.php">Editar Utilizador</a>
             <a href="../login/index.php">Log Out</a>
         </div>
     </nav><br>
     <div>
         <h2 style="margin: 20px">Minhas Experiências</h2>
         <?php
-        $num = 0;
         $url = "127.0.0.1";
         $database = "grupo12_bd";
-        $username = "root";
-        $password = "";
+        $username = $_SESSION['email'];
+        $password = $_SESSION['password'];
         $conn = mysqli_connect($url, $username, $password, $database);
 
-        $id = $_SESSION['id'];
+        $email = $_SESSION['email'];
 
-        $sql = "SELECT * FROM experiência WHERE Investigador='$id'";
-        table($conn, $sql);
+        $sql = "SELECT * FROM experiencia WHERE Investigador='$email'";
+        table($conn, $sql, true);
         ?>
-        <form method="post" action="experience_insert_edit.php?unique_id=-1&experience_type=create">
+        <form method="post" action="experience_insert_edit.php?type=create">
             <button type="submit">Adicionar Nova experiência</button>
         </form>
         <br>
@@ -77,9 +95,9 @@ function table(mysqli $conn, string $sql)
 <div id="add-experience">
     <h2 style="margin: 10px">Todas as Experiências</h2><br>
     <?php
-    $sql = "SELECT * FROM experiência";
+    $sql = "SELECT * FROM experiencia";
 
-    table($conn, $sql);
+    table($conn, $sql, false);
 
     $conn->close();
     ?>
