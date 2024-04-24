@@ -1,5 +1,12 @@
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.swing.JOptionPane;
+
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -8,18 +15,11 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 
-import java.util.*;
-
-import java.io.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-
 /**
  * @author Grupo12
  * @version 1.0
  */
-public class SendCloud implements MqttCallback {
+public class SendCloud {
     static MqttClient mqttclient;
     static String cloud_server = "";
     static String cloud_topic = "";
@@ -32,7 +32,11 @@ public class SendCloud implements MqttCallback {
     static String mongo_replica = "";
     static String mongo_database = "";
     static String mongo_authentication = "";
-    static JTextArea textArea = new JTextArea(10, 50);
+    static String javaPath = "java";
+    static String relativePath = "mongoToMqtt.MontoToMqttWorker";
+    static String mongoURI = "";
+    static List<String> mongo_collections = new ArrayList<>();
+    static List<String> cloud_topics = new ArrayList<>();
 
     /**
      * Publishes a message to the topic specified in the .ini file
@@ -47,28 +51,6 @@ public class SendCloud implements MqttCallback {
         } catch (MqttException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Method that creates the gui
-     */
-    private static void createWindow() {
-        JFrame frame = new JFrame("Send to Cloud");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel textLabel = new JLabel("Data to send do broker: ", SwingConstants.CENTER);
-        JButton b1 = new JButton("Send Data");
-        frame.getContentPane().add(textLabel, BorderLayout.PAGE_START);
-        frame.getContentPane().add(textArea, BorderLayout.CENTER);
-        frame.getContentPane().add(b1, BorderLayout.PAGE_END);
-        frame.setLocationRelativeTo(null);
-        frame.pack();
-        frame.setVisible(true);
-        b1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                // System.exit(0);
-                publishSensor(textArea.getText());
-            }
-        });
     }
 
     public static void main(String[] args) {
@@ -91,30 +73,15 @@ public class SendCloud implements MqttCallback {
             JOptionPane.showMessageDialog(null, "The SendCloud.ini file wasn't found.", "Send Cloud",
                     JOptionPane.ERROR_MESSAGE);
         }
-        new SendCloud().connecCloud();
-        createWindow();
+        new SendCloud().connectMongo();
 
-    }
-
-    /**
-     * Connects mqttClient to Coud specified in the .ini file
-     */
-    public void connecCloud() {
-        try {
-            mqttclient = new MqttClient(cloud_server, "SimulateSensor" + cloud_topic);
-            mqttclient.connect();
-            mqttclient.setCallback(this);
-            mqttclient.subscribe(cloud_topic);
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
      * Connects to Mongo DataBase specified in .ini file
      */
     public void connectMongo() {
-        String mongoURI = "mongodb://";
+        mongoURI = "mongodb://";
 
         if (mongo_authentication.equals("true"))
             mongoURI = mongoURI + mongo_user + ":" + mongo_password + "@";
@@ -129,16 +96,39 @@ public class SendCloud implements MqttCallback {
 
     }
 
-    @Override
-    public void connectionLost(Throwable cause) {
+    public void runCloudToMongoWorker(String[] arguments) {
+        try {
+            String home = System.getProperty("user.home");
+            ProcessBuilder pb = new ProcessBuilder(javaPath, "-cp",
+                    ".;" + home
+                            + "\\.m2\\repository\\org\\eclipse\\paho\\org.eclipse.paho.client.mqttv3\\1.1.0\\org.eclipse.paho.client.mqttv3-1.1.0.jar;"
+                            + home
+                            + "\\.m2\\repository\\org\\mongodb\\mongo-java-driver\\3.6.3\\mongo-java-driver-3.6.3.jar;"
+                            + home + "\\.m2\\repository\\org\\mongodb\\bson\\3.10.1\\bson-3.10.1.jar",
+                    relativePath);
+            pb.directory(new File(System.getProperty("user.dir")));
+            pb.command().addAll(List.of(arguments));
+
+            pb.start();
+
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
     }
 
-    @Override
-    public void deliveryComplete(IMqttDeliveryToken token) {
-    }
+    private void doAction() {
+        List<String> collectionsInDataBase = db.listCollectionNames().into(new ArrayList<String>());
+        for (int i = 0; i < mongo_collections.size(); i++) {
+            String topic = cloud_topics.get(i);
+            String collection = mongo_collections.get(i);
 
-    @Override
-    public void messageArrived(String topic, MqttMessage message) {
-    }
+            // if (!collectionsInDataBase.contains(collection))
+            // createCollectionAndIndex(collection);
 
+            // runCloudToMongoWorker(
+            // new String[] { cloud_server, topic, mongoURI, mongo_database, collection,
+            // enable_window });
+        }
+    }
 }

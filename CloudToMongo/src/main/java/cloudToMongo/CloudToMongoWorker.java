@@ -1,11 +1,17 @@
 package cloudToMongo;
 
-import java.util.Arrays;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Random;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 
 import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -45,7 +51,8 @@ public class CloudToMongoWorker implements MqttCallback {
         try {
             mongoSender.connectMongo();
 
-            mongoSender.setAutoIncrement();
+            // In case, this is used to calculate ACK
+            // mongoSender.setAutoIncrement();
 
             mqttReceiver.connectCloud();
 
@@ -73,22 +80,6 @@ public class CloudToMongoWorker implements MqttCallback {
         CloudToMongoWorker.enable_window = args[5].equals("true");
 
         return true;
-    }
-
-    private void setAutoIncrement() {
-        int initialValue = 0;
-
-        if (db.getCollection(collectionPersonalized.getCollectionName()).count() != 0)
-            initialValue = getAutoIncrement(collectionPersonalized.getCollectionName());
-
-        collectionPersonalized.setInitialValue(initialValue);
-    }
-
-    private int getAutoIncrement(String collection) {
-        return db.getCollection(collection)
-                .aggregate(Arrays.asList(new Document("$project", new Document("Indice", 1)),
-                        new Document("$sort", new Document("Indice", -1)), new Document("$limit", 1)))
-                .first().getInteger("Indice") + 1;
     }
 
     /**
@@ -167,8 +158,7 @@ public class CloudToMongoWorker implements MqttCallback {
     /**
      *
      * @param topic The topic that we have received
-     * @param c     MqttMessage, it is already in a json format that is why we
-     *              create a document to using Json.parse
+     * @param c     MqttMessage in a json format
      * @throws Exception
      */
     @Override
@@ -176,7 +166,8 @@ public class CloudToMongoWorker implements MqttCallback {
         try {
             Document document_json = Document.parse(transformToAtributesToString(c.toString()));
 
-            document_json.put("Indice", collectionPersonalized.getAndIncrement());
+            // In case, this is used to calculate ACK
+            // document_json.put("Indice", collectionPersonalized.getAndIncrement());
 
             MongoCollection<Document> mongocol = db
                     .getCollection(collectionPersonalized.getCollectionName());
@@ -200,4 +191,24 @@ public class CloudToMongoWorker implements MqttCallback {
         // throw new UnsupportedOperationException("Unimplemented method
         // 'deliveryComplete'");
     }
+
+    // In case, this is used to calculate ACK
+    // private void setAutoIncrement() {
+    // int initialValue = 0;
+
+    // if
+    // (db.getCollection(collectionPersonalized.getCollectionName()).countDocuments()
+    // != 0)
+    // initialValue = getAutoIncrement(collectionPersonalized.getCollectionName());
+
+    // collectionPersonalized.setInitialValue(initialValue);
+    // }
+
+    // private int getAutoIncrement(String collection) {
+    // return db.getCollection(collection)
+    // .aggregate(Arrays.asList(new Document("$project", new Document("Indice", 1)),
+    // new Document("$sort", new Document("Indice", -1)), new Document("$limit",
+    // 1)))
+    // .first().getInteger("Indice") + 1;
+    // }
 }
