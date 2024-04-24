@@ -2,7 +2,7 @@
 session_start();
 session_cache_limiter('Cache-Control : no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
 
-if (!isset($_SESSION['id'])) {
+if (!isset($_SESSION['email'])) {
     // Redirect to the login page or display an error message
     header('Location: ../login/index.php');
     exit();
@@ -22,7 +22,6 @@ if (!isset($_SESSION['id'])) {
 <body>
     <?php
     $username = $_SESSION['username'];
-    $usertype = $_SESSION['usertype'];
     ?>
 
     <nav>
@@ -38,7 +37,7 @@ if (!isset($_SESSION['id'])) {
     <div>
         <h1>Painel de Controlo</h1>
 
-        <p>Bem vindo de volta <?php echo $usertype ?> <?php echo $username ?> !</p>
+        <p>Bem vindo de volta <?php echo $username ?> !</p>
     </div>
 
 </body>

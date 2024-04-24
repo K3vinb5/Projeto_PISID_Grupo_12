@@ -9,27 +9,25 @@ function validate($data){
 
 $url = "127.0.0.1";
 $database = "grupo12_bd";
-$username = "root";
-$password = "";
+$username = $_SESSION['email'];
+$password = $_SESSION['password'];
 $conn = mysqli_connect($url, $username, $password, $database);
-
-$id = $_SESSION['id'];
 
 $desc = validate($_POST['desc']);
 $num_rats = validate($_POST['num_rats']);
 $limit_rats = validate($_POST['limit_rats']);
 $no_movement_time = validate($_POST['no_movement_time']);
-$ideal_temp = validate($_POST['ideal_temp']);
-$max_temp_change= validate($_POST['max_temp_change']);
-$allowed_temp = validate($_POST['allowed_temp']);
-$begin_experience = validate($_POST['begin_experience']);
-$end_experience = validate($_POST['end_experience']);
+$min_temp = validate($_POST['min_temp']);
+$max_temp = validate($_POST['max_temp']);
+$min_temp_alert= validate($_POST['min_temp_alert']);
+$max_temp_alert= validate($_POST['max_temp_alert']);
+$email = $_SESSION['email'];
 
-$sql = "INSERT INTO `experiência` (`IDExperiência`, `Descrição`, `Investigador`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaIdeal`, `VariaçãoTemperaturaMáxima`, `TolerânciaTemperatura`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`)
-VALUES (NULL, '$desc', '$id', current_timestamp(), '$num_rats', '$limit_rats', '$no_movement_time', '$ideal_temp', '$max_temp_change', '$allowed_temp', '2024-02-12 03:02:12', '2024-02-13 03:02:12')";
-echo "$sql";
+$sql = "CALL InserirExperiencia(\"$desc\", $num_rats, $limit_rats, $no_movement_time, $min_temp, $max_temp, $max_temp_alert, $min_temp_alert,  \"$email\")";
 mysqli_query($conn, $sql);
+echo "$sql";
+
 //redirects to experiences.php
-header("Location: experiences.php");
+header("Location: ../home/experiences.php");
 $conn->close();
 exit();

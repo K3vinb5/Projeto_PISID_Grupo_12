@@ -62,21 +62,33 @@ div{
     margin-right: 100px;
     margin-top: 50px;
     background-color: #e5e5e5;
-    display: block;
     text-align: left;
 }
 
-.new-experience form{
-    display: inline-block;
-    margin-left: auto;
-    margin-right: auto;
+.form-experience {
+    padding: 20px;
+    margin: 50px auto; /* Center the container horizontally */
+    max-width: 80%; /* Limit the width of the container */
+    background-color: #e5e5e5;
     text-align: left;
 }
 
-.new-experience form input,label{
-    margin-left: 40px;
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    background-color: #e5e5e5;
 }
 
+.form-group {
+    flex: 1; /* Let each pair take equal space */
+    margin-left: 10px; /* Add some spacing between pairs */
+    background-color: #e5e5e5;
+}
+
+.form-group:last-child {
+    margin-right: 0; /* Remove margin-right for the last pair */
+}
 
 .index-form {
     width: 500px;
@@ -89,7 +101,7 @@ div{
 input[type="text"],input[type="password"],input[type="datetime-local"],input[type="number"] {
     display: block;
     border: 2px solid #ccc;
-    padding: 10px;
+    padding: 15px;
     margin: 10px;
     border-radius: 5px;
 }
