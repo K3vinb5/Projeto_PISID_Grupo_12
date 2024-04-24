@@ -61,6 +61,7 @@
                     <target>16</target>
                     <includes>
                         <include>cloudToMongo/CloudToMongoWorker.java</include>
+                        <include>cloudToMongo/CollectionPersonalized.java</include>
                     </includes>
                 </configuration>
             </plugin>

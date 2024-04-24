@@ -12,3 +12,6 @@ CloudToMongo/lib/
 Sensors Emulator/.idea/
 Sensors Emulator/.venv/
 
+# Ignorar Coisas no MongoToSQL
+MongoToSQL/.idea/
+MongoToSQL/lib/
