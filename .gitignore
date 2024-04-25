@@ -3,6 +3,9 @@
 *.class
 *.class
 
+# Bad text editor
+.vscode/
+
 # Ignorar Coisas no CloudToMongo
 CloudToMongo/target/
 CloudToMongo/.idea/

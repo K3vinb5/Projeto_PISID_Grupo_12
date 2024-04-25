@@ -1,3 +1,5 @@
+package insertSQL;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -9,19 +11,20 @@ public class OutlierDetector {
     private Queue<Double> lastValues = new LinkedList<>();
 
     /**
-     * Tests if value from parameter is an Outlier in the recent data set in orderedValues
+     * Tests if value from parameter is an Outlier in the recent data set in
+     * orderedValues
      *
      * @param value value to test for outlier
      * @return true if the value is an Outlier or false otherwise
      */
-    public boolean checkOutlier(double value){
-        if(orderedValues.size() == OUTLIERDETECTORSIZE){
+    public boolean checkOutlier(double value) {
+        if (orderedValues.size() == OUTLIERDETECTORSIZE) {
             orderedValues.remove(lastValues.poll());
         }
-        lastValues.add(value); //Add new value to Queue
-        orderedValues.add(value); //Add new value to sortedArray
-        insertionSort(orderedValues); //Sort new value using Insertion Sort
-        return isIQROutlier(value); //Verify if value is outlier using IQR
+        lastValues.add(value); // Add new value to Queue
+        orderedValues.add(value); // Add new value to sortedArray
+        insertionSort(orderedValues); // Sort new value using Insertion Sort
+        return isIQROutlier(value); // Verify if value is outlier using IQR
     }
 
     private boolean isIQROutlier(double value) {
@@ -59,7 +62,7 @@ public class OutlierDetector {
         for (int i = 1; i < n; ++i) {
             double key = arr.get(i);
             int j = i - 1;
-            for (;j >= 0 && arr.get(j) > key;j--) {
+            for (; j >= 0 && arr.get(j) > key; j--) {
                 arr.set(j + 1, arr.get(j));
             }
             arr.set(j + 1, key);
@@ -69,11 +72,11 @@ public class OutlierDetector {
     public static void main(String[] args) {
         OutlierDetector od = new OutlierDetector();
         int counter = 0;
-        for (int i = 0 ; i < 1000 ; i++){
-            double val = i % 100 == 0 ? Math.random()*100-50 : Math.random()*20;
-            if (od.checkOutlier(val)){
+        for (int i = 0; i < 1000; i++) {
+            double val = i % 100 == 0 ? Math.random() * 100 - 50 : Math.random() * 20;
+            if (od.checkOutlier(val)) {
                 counter++;
-                System.out.println("Outlier Found!! " + counter + ":- " + val  );
+                System.out.println("Outlier Found!! " + counter + ":- " + val);
             }
         }
     }
