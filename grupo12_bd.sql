@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 24, 2024 at 12:17 AM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.1.12
+-- Generation Time: Apr 25, 2024 at 12:59 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -107,6 +107,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ComecarTerminarExperienca` (IN `idE
     
 END$$
 
+DROP PROCEDURE IF EXISTS `DesativarSensor`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `DesativarSensor` (IN `idSensor` INT)   BEGIN
+
+	UPDATE sensor s
+    SET s.IsActive = FALSE
+	WHERE s.IDSensor = idSensor;
+
+END$$
+
 DROP PROCEDURE IF EXISTS `EditarExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` TEXT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `temperaturaAvisoMaximo` DECIMAL(4,2), IN `temperaturaAvisoMinimo` DECIMAL(4.2), IN `idExperiencia` INT)   BEGIN
 
@@ -153,7 +162,32 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarNumRatosSala` (IN `idExperien
 END$$
 
 DROP PROCEDURE IF EXISTS `EditarParametrosAdicionais`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarParametrosAdicionais` (IN `id` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarParametrosAdicionais` (IN `nrRegistosOutlierTemperatura` INT, IN `nrRegistosAlertaTemperatura` INT, IN `controloSpamTemperatura` INT, IN `controloSpamMovimentos` INT)   BEGIN
+
+	UPDATE parametroadicional p
+	SET p.NrRegistosOutlierTemperatura = IFNULL(nrRegistosOutlierTemperatura, e.NrRegistosOutlierTemperatura), 
+    	p.NrRegistosAlertaTemperatura = IFNULL(nrRegistosAlertaTemperatura, e.NrRegistosAlertaTemperatura), 
+        p.ControloSpamTemperatura = IFNULL(controloSpamTemperatura, e.ControloSpamTemperatura),
+        p.ControloSpamMovimentos = IFNULL(controloSpamMovimentos, e.ControloSpamMovimentos);
+
+END$$
+
+DROP PROCEDURE IF EXISTS `EditarSensor`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarSensor` (IN `idSensor` INT, IN `nome` VARCHAR(50), IN `idTipoSensor` INT)   BEGIN
+
+	UPDATE sensor s
+    SET s.Nome = IFNULL(nome, s.Nome),
+    	s.IDTipoSensor = IFNULL(idTipoSensor, s.IDTipoSensor)
+	WHERE s.IDSensor = idSensor;
+
+END$$
+
+DROP PROCEDURE IF EXISTS `EditarTipoSensor`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarTipoSensor` (IN `idTipoSensor` INT, IN `designacao` VARCHAR(50))   BEGIN
+
+	UPDATE tiposensor t
+    SET t.Designacao = IFNULL(designacao, t.Designacao)
+	WHERE t.IDTipoSensor = idTipoSensor;
 
 END$$
 
@@ -356,6 +390,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirTemperatura` (IN `dataHora` 
 
 END$$
 
+DROP PROCEDURE IF EXISTS `InserirTipoSensor`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirTipoSensor` (IN `designacao` VARCHAR(50))   BEGIN
+
+	INSERT INTO tiposensor (Designacao) 
+    VALUES (designacao);
+
+END$$
+
 DROP PROCEDURE IF EXISTS `InserirUtilizador`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirUtilizador` (IN `emailUtilizador` VARCHAR(200), IN `nomeUtilizador` VARCHAR(100), IN `tipoUtilizador` ENUM('Investigador','AdministradorAplicacao','WriteMySql'), IN `telefoneUtilizador` VARCHAR(12))   BEGIN
 
@@ -440,6 +482,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterListaExperiencias` ()   BEGIN
 
 END$$
 
+DROP PROCEDURE IF EXISTS `ObterListaSensores`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterListaSensores` ()   BEGIN
+
+	SELECT * FROM sensor WHERE IsActive = TRUE;
+
+END$$
+
 DROP PROCEDURE IF EXISTS `ObterPassagensExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterPassagensExperiencia` (IN `idExperiencia` INT)   BEGIN
 
@@ -452,13 +501,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterRatosSalasExperiencia` (IN `id
 
 	SELECT * FROM medicoessala m WHERE m.IDExperiência = idExperiencia;
     
-END$$
-
-DROP PROCEDURE IF EXISTS `ObterSensores`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterSensores` ()   BEGIN
-
-	SELECT * FROM sensor;
-
 END$$
 
 DROP PROCEDURE IF EXISTS `ObterTemperaturasExperiencia`$$
@@ -488,7 +530,7 @@ CREATE TABLE IF NOT EXISTS `alerta` (
   `IDAlerta` int(11) NOT NULL AUTO_INCREMENT,
   `DataHora` datetime NOT NULL,
   `Sala` int(11) DEFAULT NULL,
-  `Sensor` int(11) DEFAULT NULL,
+  `IDSensor` int(11) DEFAULT NULL,
   `Leitura` decimal(4,2) DEFAULT NULL,
   `TipoAlerta` enum('Sem movimento','Temperatura','Capacidade da sala') NOT NULL,
   `Mensagem` varchar(100) NOT NULL,
@@ -496,6 +538,21 @@ CREATE TABLE IF NOT EXISTS `alerta` (
   PRIMARY KEY (`IDAlerta`),
   KEY `ExperienciaFK` (`IDExperiência`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Triggers `alerta`
+--
+DROP TRIGGER IF EXISTS `AlertaInsertBefore`;
+DELIMITER $$
+CREATE TRIGGER `AlertaInsertBefore` BEFORE INSERT ON `alerta` FOR EACH ROW BEGIN
+
+	IF NOT EXISTS (SELECT * FROM sensor WHERE IDSensor = new.IDSensor AND IsActive = TRUE) THEN
+    	SET new.IDSensor = (SELECT s.IDSensor FROM sensor s WHERE s.Nome = 'Not Defined' AND s.IDTipoSensor = (SELECT * FROM tiposensor t WHERE T.Designacao = 'Not Defined'));
+    END IF;
+
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -528,11 +585,11 @@ CREATE TABLE IF NOT EXISTS `experiencia` (
 --
 
 INSERT INTO `experiencia` (`IDExperiência`, `Descrição`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TemperaturaAvisoMaximo`, `TemperaturaAvisoMinimo`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `RemocaoLogica`, `Investigador`) VALUES
-(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, '10.00', '25.00', '15.00', '11.00', NULL, NULL, 1, 'pedro@iscte.pt'),
-(25, 'teste', '2024-04-22 17:56:21', 50, 8, 30, '5.00', '20.00', '18.00', '7.00', NULL, NULL, 0, 'pedro@iscte.pt'),
-(26, 'Experiencia editada 123', '2024-04-22 21:47:49', 20, 5, 10, '19.00', '24.00', '24.00', '19.00', NULL, NULL, 0, 'pedro@iscte.pt'),
-(27, 'teste 1', '2024-04-22 22:35:13', 10, 2, 10, '15.00', '25.00', '20.00', '19.00', NULL, NULL, 0, 'fatima@iscte.pt'),
-(28, 'Experiencia com email NULL', '2024-04-22 22:35:55', 10, 2, 10, '15.00', '25.00', '20.00', '19.00', NULL, NULL, 0, 'fatima@iscte.pt');
+(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, 10.00, 25.00, 15.00, 11.00, NULL, NULL, 1, 'pedro@iscte.pt'),
+(25, 'teste', '2024-04-22 17:56:21', 50, 8, 30, 5.00, 20.00, 18.00, 7.00, NULL, NULL, 0, 'pedro@iscte.pt'),
+(26, 'Experiencia editada 123', '2024-04-22 21:47:49', 20, 5, 10, 19.00, 24.00, 24.00, 19.00, NULL, NULL, 0, 'pedro@iscte.pt'),
+(27, 'teste 1', '2024-04-22 22:35:13', 10, 2, 10, 15.00, 25.00, 20.00, 19.00, NULL, NULL, 0, 'fatima@iscte.pt'),
+(28, 'Experiencia com email NULL', '2024-04-22 22:35:55', 10, 2, 10, 15.00, 25.00, 20.00, 19.00, NULL, NULL, 0, 'fatima@iscte.pt');
 
 --
 -- Triggers `experiencia`
@@ -889,7 +946,48 @@ CREATE TABLE IF NOT EXISTS `parametroadicional` (
   `ControloSpamTemperatura` int(11) NOT NULL DEFAULT 30,
   `ControloSpamMovimentos` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`IDParâmetro`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `parametroadicional`
+--
+
+INSERT INTO `parametroadicional` (`IDParâmetro`, `NrRegistosOutlierTemperatura`, `NrRegistosAlertaTemperatura`, `ControloSpamTemperatura`, `ControloSpamMovimentos`) VALUES
+(1, 25, 15, 30, 0);
+
+--
+-- Triggers `parametroadicional`
+--
+DROP TRIGGER IF EXISTS `ParametroAdicionalUpdateBefore`;
+DELIMITER $$
+CREATE TRIGGER `ParametroAdicionalUpdateBefore` BEFORE UPDATE ON `parametroadicional` FOR EACH ROW BEGIN
+
+	DECLARE idExperiencia INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
+    
+	IF idExperiencia IS NOT NULL THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Não pode editar os parametros enquanto uma experiencia está a decorrer!';
+    END IF;
+    
+    IF new.NrRegistosOutlierTemperatura <= 0 THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'O numero de registos para deteção de outliers de temperatura não pode ser inferior ou igual a 0!';
+    END IF;
+    
+    IF new.NrRegistosAlertaTemperatura <= 0 THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'O numero de registos para deteção de alertas de temperatura não pode ser inferior ou igual a 0!';
+    END IF;
+    
+    IF new.ControloSpamTemperatura < 0 THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Os segundos para controlo de spam de temperatura não podem ser inferiores a 0!';
+    END IF;
+    
+    IF new.ControloSpamMovimentos < 0 THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Os segundos para controlo de spam de temperatura não podem ser inferiores a 0!';
+    END IF;
+
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -902,9 +1000,17 @@ CREATE TABLE IF NOT EXISTS `sensor` (
   `IDSensor` int(11) NOT NULL AUTO_INCREMENT,
   `Nome` varchar(50) NOT NULL,
   `IDTipoSensor` int(11) NOT NULL,
+  `IsActive` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`IDSensor`),
   KEY `IDTipoSensor` (`IDTipoSensor`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `sensor`
+--
+
+INSERT INTO `sensor` (`IDSensor`, `Nome`, `IDTipoSensor`, `IsActive`) VALUES
+(1, 'Not Defined', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -918,7 +1024,40 @@ CREATE TABLE IF NOT EXISTS `tiposensor` (
   `Designacao` varchar(50) NOT NULL,
   PRIMARY KEY (`IDTipoSensor`),
   UNIQUE KEY `Designacao` (`Designacao`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `tiposensor`
+--
+
+INSERT INTO `tiposensor` (`IDTipoSensor`, `Designacao`) VALUES
+(1, 'Not Defined');
+
+--
+-- Triggers `tiposensor`
+--
+DROP TRIGGER IF EXISTS `TipoSensorInsertBefore`;
+DELIMITER $$
+CREATE TRIGGER `TipoSensorInsertBefore` BEFORE INSERT ON `tiposensor` FOR EACH ROW BEGIN
+
+	IF EXISTS (SELECT * FROM tiposensor t WHERE t.Designacao = new.Designacao) THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Está a tentar inserir um tipo de sensor que já existe!';
+    END IF;
+
+END
+$$
+DELIMITER ;
+DROP TRIGGER IF EXISTS `TipoSensorUpdateBefore`;
+DELIMITER $$
+CREATE TRIGGER `TipoSensorUpdateBefore` BEFORE UPDATE ON `tiposensor` FOR EACH ROW BEGIN
+
+	IF EXISTS (SELECT * FROM tiposensor t WHERE t.Designacao = new.Designacao) AND new.Designacao <> old.Designacao THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Já existe o tipo de sensor!';
+    END IF;
+
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -969,12 +1108,36 @@ CREATE TABLE IF NOT EXISTS `v_expadecorrer` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `v_utilizador`
+-- (See below for the actual view)
+--
+DROP VIEW IF EXISTS `v_utilizador`;
+CREATE TABLE IF NOT EXISTS `v_utilizador` (
+`Email` varchar(200)
+,`Nome` varchar(100)
+,`Telefone` varchar(12)
+,`RemocaoLogica` tinyint(1)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Structure for view `v_expadecorrer`
 --
 DROP TABLE IF EXISTS `v_expadecorrer`;
 
 DROP VIEW IF EXISTS `v_expadecorrer`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiência` AS `IDExperiência`, `e`.`Descrição` AS `Descrição`, `e`.`Investigador` AS `Investigador`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `e`.`RemocaoLogica` AS `RemocaoLogica` FROM `experiencia` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is nullnull  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiência` AS `IDExperiência`, `e`.`Descrição` AS `Descrição`, `e`.`Investigador` AS `Investigador`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `e`.`RemocaoLogica` AS `RemocaoLogica` FROM `experiencia` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is null ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_utilizador`
+--
+DROP TABLE IF EXISTS `v_utilizador`;
+
+DROP VIEW IF EXISTS `v_utilizador`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_utilizador`  AS SELECT `u`.`Email` AS `Email`, `u`.`Nome` AS `Nome`, `u`.`Telefone` AS `Telefone`, `u`.`RemocaoLogica` AS `RemocaoLogica` FROM `utilizador` AS `u` WHERE `u`.`Email` = substring_index(user(),'@',2) ;
 
 --
 -- Constraints for dumped tables
