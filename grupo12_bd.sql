@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 26, 2024 at 12:11 PM
+-- Generation Time: Apr 26, 2024 at 03:52 PM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.1.12
 
@@ -31,7 +31,7 @@ DROP PROCEDURE IF EXISTS `ApagarExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarExperiencia` (IN `idExperiencia` INT)   BEGIN
 
 	DELETE FROM experiencia
-	WHERE IDExperiência = idExperiencia;
+	WHERE IDExperiencia = idExperiencia;
     
     SELECT ROW_COUNT();
 
@@ -53,7 +53,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AtribuirExperienciaInvestigador` (I
 
 	DECLARE countExp, countUti, idExperienciaDecorrer INT;
 
-    SELECT COUNT(*) INTO countExp FROM experiência e WHERE e.IDExperiência = idExperiencia;
+    SELECT COUNT(*) INTO countExp FROM experiência e WHERE e.IDExperiencia = idExperiencia;
     SELECT COUNT(*) INTO countUti FROM utilizador u WHERE u.IDUtilizador = idInvestigador;
 	
     IF countExp>0 AND countUti>0 THEN
@@ -61,7 +61,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AtribuirExperienciaInvestigador` (I
         IF idExperienciaDecorrer != idExperiencia THEN
         	UPDATE experiência e
             SET e.Investigador = idInvestigador
-            WHERE e.IDExperiência = idExperiencia;
+            WHERE e.IDExperiencia = idExperiencia;
 		END IF;
 	END IF;
     
@@ -73,16 +73,16 @@ DROP PROCEDURE IF EXISTS `AtualizarNumRatosSala`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `AtualizarNumRatosSala` (IN `salaOrigem` INT, IN `salaDestino` INT, IN `idExperiencia` INT)   BEGIN
 
 	DECLARE valorOrigem, valorDestino INT;
-    SELECT m.NúmeroRatosFinal INTO valorOrigem FROM medicoessala m WHERE m.IDExperiência = idExperiencia AND m.Sala = salaOrigem LIMIT 1;
-    SELECT m.NúmeroRatosFinal INTO valorDestino FROM medicoessala m WHERE m.IDExperiência = idExperiencia AND m.Sala = salaDestino LIMIT 1;
+    SELECT m.NúmeroRatosFinal INTO valorOrigem FROM medicoessala m WHERE m.IDExperiencia = idExperiencia AND m.Sala = salaOrigem LIMIT 1;
+    SELECT m.NúmeroRatosFinal INTO valorDestino FROM medicoessala m WHERE m.IDExperiencia = idExperiencia AND m.Sala = salaDestino LIMIT 1;
     
 	UPDATE medicoessala
     SET NúmeroRatosFinal = (valorOrigem - 1)
-    WHERE Sala = salaOrigem AND IDExperiência = idExperiencia;
+    WHERE Sala = salaOrigem AND IDExperiencia = idExperiencia;
     
     UPDATE medicoessala
     SET NúmeroRatosFinal = (valorDestino + 1)
-    WHERE Sala = salaDestino AND IDExperiência = idExperiencia;
+    WHERE Sala = salaDestino AND IDExperiencia = idExperiencia;
 
 END$$
 
@@ -95,12 +95,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ComecarTerminarExperienca` (IN `idE
     IF idExperienciaDecorrer IS NULL THEN
     	UPDATE experiencia e
         SET e.DataHoraInicioExperiência = NOW()
-        WHERE e.IDExperiência = idExperiencia;
+        WHERE e.IDExperiencia = idExperiencia;
 	ELSE
     	IF idExperiencia = idExperienciaDecorrer THEN
         	UPDATE experiencia e
             SET e.DataHoraFimExperiência = NOW()
-            WHERE e.IDExperiência = idExperiencia;
+            WHERE e.IDExperiencia = idExperiencia;
 		END IF;
 	END IF;
     
@@ -118,7 +118,7 @@ END$$
 DROP PROCEDURE IF EXISTS `EditarExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` TEXT, IN `numeroRatos` INT, IN `limiteRatosSala` INT, IN `segSemMovimento` INT, IN `temperaturaMinima` DECIMAL(4,2), IN `temperaturaMaxima` DECIMAL(4,2), IN `temperaturaAvisoMaximo` DECIMAL(4,2), IN `temperaturaAvisoMinimo` DECIMAL(4.2), IN `idExperiencia` INT)   BEGIN
 
-    SET @sql = 'SELECT COUNT(*) INTO @expExists FROM experiencia WHERE IDExperiência = ?';
+    SET @sql = 'SELECT COUNT(*) INTO @expExists FROM experiencia WHERE IDExperiencia = ?';
     PREPARE stmt FROM @sql;
     EXECUTE stmt USING idExperiencia;
     DEALLOCATE PREPARE stmt;
@@ -127,7 +127,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` 
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Está a tentar editar uma experiencia que não existe!';
     END IF;
 
-    SET @sql = 'SELECT DataHoraInicioExperiência INTO @inicioExp FROM experiencia WHERE IDExperiência = ?';
+    SET @sql = 'SELECT DataHoraInicioExperiência INTO @inicioExp FROM experiencia WHERE IDExperiencia = ?';
     PREPARE stmt FROM @sql;
     EXECUTE stmt USING idExperiencia;
     DEALLOCATE PREPARE stmt;
@@ -135,7 +135,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` 
     IF @inicioExp IS NOT NULL THEN
         UPDATE experiencia e
         SET e.Descrição = IFNULL(descricao, e.Descrição)
-        WHERE e.IDExperiência = idExperiencia;
+        WHERE e.IDExperiencia = idExperiencia;
     ELSE
         UPDATE experiencia e
         SET e.Descrição = IFNULL(descricao, e.Descrição), 
@@ -146,7 +146,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperiencia` (IN `descricao` 
             e.TemperaturaMaxima = IFNULL(temperaturaMaxima, e.TemperaturaMaxima), 
             e.TemperaturaAvisoMaximo = IFNULL(temperaturaAvisoMaximo, e.TemperaturaAvisoMaximo), 
             e.TemperaturaAvisoMinimo = IFNULL(temperaturaAvisoMinimo, e.TemperaturaAvisoMinimo)
-        WHERE e.IDExperiência = idExperiencia;
+        WHERE e.IDExperiencia = idExperiencia;
     END IF;
     
 END$$
@@ -156,7 +156,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarNumRatosSala` (IN `idExperien
 
 	UPDATE medicoessala m
     SET m.NúmeroRatosFinal = IFNULL(numeroRatos, m.NúmeroRatosFinal)
-    WHERE m.IDExperiência = idExperiencia AND m.Sala = sala;
+    WHERE m.IDExperiencia = idExperiencia AND m.Sala = sala;
 
 END$$
 
@@ -320,7 +320,7 @@ END$$
 DROP PROCEDURE IF EXISTS `IniciarSala`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `IniciarSala` (IN `idExperiencia` INT, IN `numeroRatos` INT, IN `sala` INT)   BEGIN
 
-	INSERT INTO medicoessala (IDExperiência, NúmeroRatosFinal, Sala)
+	INSERT INTO medicoessala (IDExperiencia, NúmeroRatosFinal, Sala)
 	VALUES (idExperiencia, numeroRatos, sala);
 
 END$$
@@ -450,21 +450,21 @@ END$$
 DROP PROCEDURE IF EXISTS `ObterExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperiencia` (IN `idExperiencia` INT)   BEGIN
 
-	SELECT * FROM experiencia e WHERE e.IDExperiência = idExperiencia;
+	SELECT * FROM experiencia e WHERE e.IDExperiencia = idExperiencia;
     
 END$$
 
 DROP PROCEDURE IF EXISTS `ObterExperienciaADecorrer`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperienciaADecorrer` (OUT `idExperiencia` INT)   BEGIN
 
-    SELECT IDExperiência INTO idExperiencia FROM v_expadecorrer LIMIT 1;
+    SELECT IDExperiencia INTO idExperiencia FROM v_expadecorrer LIMIT 1;
     
 END$$
 
 DROP PROCEDURE IF EXISTS `ObterExperienciasInvestigador`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperienciasInvestigador` (IN `email` VARCHAR(200))   BEGIN
 
-	SELECT * FROM experiencia WHERE Investigador = email AND NOT RemocaoLogica;
+	SELECT * FROM experiencia WHERE Investigador = email;
 
 END$$
 
@@ -478,7 +478,7 @@ END$$
 DROP PROCEDURE IF EXISTS `ObterListaExperiencias`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterListaExperiencias` ()   BEGIN
 
-	SELECT * FROM experiencia WHERE NOT RemocaoLogica;
+	SELECT * FROM experiencia;
 
 END$$
 
@@ -492,21 +492,21 @@ END$$
 DROP PROCEDURE IF EXISTS `ObterPassagensExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterPassagensExperiencia` (IN `idExperiencia` INT)   BEGIN
 
-	SELECT * FROM medicoespassagem m WHERE m.IDExperiência = idExperiencia;
+	SELECT * FROM medicoespassagem m WHERE m.IDExperiencia = idExperiencia;
     
 END$$
 
 DROP PROCEDURE IF EXISTS `ObterRatosSalasExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterRatosSalasExperiencia` (IN `idExperiencia` INT)   BEGIN
 
-	SELECT * FROM medicoessala m WHERE m.IDExperiência = idExperiencia;
+	SELECT * FROM medicoessala m WHERE m.IDExperiencia = idExperiencia;
     
 END$$
 
 DROP PROCEDURE IF EXISTS `ObterTemperaturasExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterTemperaturasExperiencia` (IN `idExperiencia` INT)   BEGIN
 
-	SELECT * FROM medicoestemperatura m WHERE m.IDExperiência = idExperiencia;
+	SELECT * FROM medicoestemperatura m WHERE m.IDExperiencia = idExperiencia;
     
 END$$
 
@@ -567,7 +567,7 @@ DELIMITER ;
 
 DROP TABLE IF EXISTS `experiencia`;
 CREATE TABLE IF NOT EXISTS `experiencia` (
-  `IDExperiência` int(11) NOT NULL AUTO_INCREMENT,
+  `IDExperiencia` int(11) NOT NULL AUTO_INCREMENT,
   `Descrição` text DEFAULT NULL,
   `DataHoraCriaçãoExperiência` datetime NOT NULL DEFAULT current_timestamp(),
   `NúmeroRatos` int(11) NOT NULL,
@@ -580,7 +580,7 @@ CREATE TABLE IF NOT EXISTS `experiencia` (
   `DataHoraInicioExperiência` datetime DEFAULT NULL,
   `DataHoraFimExperiência` datetime DEFAULT NULL,
   `Investigador` varchar(200) NOT NULL,
-  PRIMARY KEY (`IDExperiência`),
+  PRIMARY KEY (`IDExperiencia`),
   KEY `experiência_ibfk_1` (`Investigador`)
 ) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -588,7 +588,7 @@ CREATE TABLE IF NOT EXISTS `experiencia` (
 -- Dumping data for table `experiencia`
 --
 
-INSERT INTO `experiencia` (`IDExperiência`, `Descrição`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TemperaturaAvisoMaximo`, `TemperaturaAvisoMinimo`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `Investigador`) VALUES
+INSERT INTO `experiencia` (`IDExperiencia`, `Descrição`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TemperaturaAvisoMaximo`, `TemperaturaAvisoMinimo`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `Investigador`) VALUES
 (24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, '10.00', '25.00', '15.00', '11.00', NULL, NULL, 'pedro@iscte.pt'),
 (25, 'teste', '2024-04-22 17:56:21', 50, 8, 30, '5.00', '20.00', '18.00', '7.00', NULL, NULL, 'pedro@iscte.pt'),
 (26, 'Experiencia editada 123', '2024-04-22 21:47:49', 20, 5, 10, '19.00', '24.00', '24.00', '19.00', NULL, NULL, 'pedro@iscte.pt'),
@@ -619,11 +619,11 @@ CREATE TRIGGER `ExperienciaInsertAfter` AFTER INSERT ON `experiencia` FOR EACH R
 
 	DECLARE counter INT DEFAULT 1;
     
-	CALL IniciarSala(new.IDExperiência , new.NúmeroRatos, counter);
+	CALL IniciarSala(new.IDExperiencia , new.NúmeroRatos, counter);
     SELECT counter + 1 INTO counter;
     
     WHILE counter < 10 DO
-    	CALL IniciarSala(new.IDExperiência, 0, counter);
+    	CALL IniciarSala(new.IDExperiencia, 0, counter);
         SELECT counter + 1 INTO counter;
 	END WHILE;
 
@@ -698,10 +698,6 @@ CREATE TRIGGER `ExperienciaInsertBefore` BEFORE INSERT ON `experiencia` FOR EACH
     	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Não pode terminar uma experiência que ainda não começou!';
     END IF;
     
-    IF new.RemocaoLogica THEN
-    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Não é possivel fazer uma remoção lógica de uma experiência, antes dessa estar criada!';
-    END IF;
-    
     IF new.DataHoraCriaçãoExperiência < (NOW() - INTERVAL 5 MINUTE) OR new.DataHoraCriaçãoExperiência > (NOW() + INTERVAL 5 MINUTE) THEN
     	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A data de criação não deve ser alterada!';
     END IF;
@@ -714,7 +710,7 @@ DELIMITER $$
 CREATE TRIGGER `ExperienciaUpdateAfter` AFTER UPDATE ON `experiencia` FOR EACH ROW BEGIN
 
 	IF 	old.NúmeroRatos <> new.NúmeroRatos THEN
-    	CALL EditarNumRatosSala(new.IDExperiência, new.NúmeroRatos, 1);
+    	CALL EditarNumRatosSala(new.IDExperiencia, new.NúmeroRatos, 1);
     END IF;
 
 END
@@ -740,10 +736,6 @@ CREATE TRIGGER `ExperienciaUpdateBefore` BEFORE UPDATE ON `experiencia` FOR EACH
         IF old.DataHoraFimExperiência IS NOT NULL THEN
         	IF old.DataHoraFimExperiência <> new.DataHoraFimExperiência THEN
             	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Não pode alterar a data/hora de fim de uma experiencia que já tenha decorrido!';
-            END IF;
-        ELSE
-        	IF old.RemocaoLogica <> new.RemocaoLogica THEN
-            	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Não é possivel alterar o estado da experiencia!';
             END IF;
         END IF;
         
@@ -873,8 +865,8 @@ DROP TRIGGER IF EXISTS `MedicoesPassagemInsertAfter`;
 DELIMITER $$
 CREATE TRIGGER `MedicoesPassagemInsertAfter` AFTER INSERT ON `medicoespassagem` FOR EACH ROW BEGIN
 
-	IF new.IDExperiência IS NOT NULL THEN
-    	CALL AtualizarNumRatosSala(new.SalaOrigem, new.SalaDestino, new.IDExperiência);
+	IF new.IDExperiencia IS NOT NULL THEN
+    	CALL AtualizarNumRatosSala(new.SalaOrigem, new.SalaDestino, new.IDExperiencia);
     END IF;
 
 END
@@ -1185,7 +1177,7 @@ INSERT INTO `utilizador` (`Email`, `Nome`, `Telefone`, `RemocaoLogica`) VALUES
 --
 DROP VIEW IF EXISTS `v_expadecorrer`;
 CREATE TABLE IF NOT EXISTS `v_expadecorrer` (
-`IDExperiência` int(11)
+`IDExperiencia` int(11)
 ,`Descrição` text
 ,`Investigador` varchar(200)
 ,`DataHoraCriaçãoExperiência` datetime
@@ -1220,7 +1212,7 @@ CREATE TABLE IF NOT EXISTS `v_utilizador` (
 DROP TABLE IF EXISTS `v_expadecorrer`;
 
 DROP VIEW IF EXISTS `v_expadecorrer`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiência` AS `IDExperiência`, `e`.`Descrição` AS `Descrição`, `e`.`Investigador` AS `Investigador`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência` FROM `experiencia` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is null  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiencia` AS `IDExperiencia`, `e`.`Descrição` AS `Descrição`, `e`.`Investigador` AS `Investigador`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência` FROM `experiencia` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is nullnull  ;
 
 -- --------------------------------------------------------
 
@@ -1240,7 +1232,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- Constraints for table `alerta`
 --
 ALTER TABLE `alerta`
-  ADD CONSTRAINT `ExperienciaFK` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiência`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `ExperienciaFK` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `experiencia`
@@ -1252,25 +1244,25 @@ ALTER TABLE `experiencia`
 -- Constraints for table `medicoesnaoconformes`
 --
 ALTER TABLE `medicoesnaoconformes`
-  ADD CONSTRAINT `medicoesnaoconformes_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiência`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `medicoesnaoconformes_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `medicoespassagem`
 --
 ALTER TABLE `medicoespassagem`
-  ADD CONSTRAINT `medicoespassagem_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiência`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `medicoespassagem_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `medicoessala`
 --
 ALTER TABLE `medicoessala`
-  ADD CONSTRAINT `medicoessala_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiência`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `medicoessala_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `medicoestemperatura`
 --
 ALTER TABLE `medicoestemperatura`
-  ADD CONSTRAINT `medicoestemperatura_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiência`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `medicoestemperatura_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `medicoestemperatura_ibfk_2` FOREIGN KEY (`Sensor`) REFERENCES `sensor` (`IDSensor`) ON UPDATE CASCADE;
 
 --
