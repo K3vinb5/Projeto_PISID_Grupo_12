@@ -6,16 +6,18 @@ import com.google.gson.JsonObject;
 
 import java.io.*;
 import java.util.*;
+import java.util.Date;
 import java.util.List;
 import java.sql.*;
-import java.sql.Date;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import javax.print.DocFlavor.STRING;
 import javax.swing.*;
 
 import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.BsonValue;
 import org.bson.conversions.Bson;
 
@@ -94,6 +96,23 @@ public class WriteMysql {
                 ";";
     }
 
+    private static String insertCommand(String json) {
+        JsonObject jsonObject = new Gson().fromJson(json,
+                JsonObject.class);
+        String fields = "(";
+        String values = "(";
+
+        for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+            fields += entry.getKey() + ", ";
+            values += entry.getValue().toString() + ", ";
+        }
+        fields = fields.substring(0, fields.length() - 2) + ")";
+        values = values.substring(0, values.length() - 2) + ")";
+
+        return "Insert into " + sql_table_to + " " + fields + " values " + values +
+                ";";
+    }
+
     public void connectDatabase_to() {
         try {
             Class.forName("org.mariadb.jdbc.Driver");
@@ -117,37 +136,55 @@ public class WriteMysql {
         }
     }
 
-    public void CallToMySQL(String spName, BsonDocument document) throws SQLException {
+    public boolean CallToMySQL(String spName, BsonDocument document, boolean isValidation) throws SQLException {
         ResultSet rs = getSchemaSP(spName);
 
-        int counter = 0;
         List<String> params = new ArrayList<>();
+        List<String> types = new ArrayList<>();
         while (rs.next()) {
             params.add(rs.getString("PARAMETER_NAME"));
-            counter++;
+            types.add(rs.getString("DATA_TYPE"));
         }
 
         String sql = "{call " + spName + "(";
-        for (int i = 0; i < counter; i++)
+        for (int i = 0; i < params.size(); i++)
             sql += "?,";
 
-        if (counter > 0)
+        if (params.size() > 0)
             sql = sql.substring(0, sql.length() - 1);
 
         sql += ")}";
 
         CallableStatement stmt = connTo.prepareCall(sql);
 
-        for (int i = 0; i < counter; i++) {
-            BsonValue value = document.get(params.get(i));
-            DateFormat d = new SimpleDateFormat(value.toString());
-            stmt.setString(i, d.format(new Date(System.currentTimeMillis())));
+        for (int i = 1; i <= params.size(); i++) {
+            BsonValue value = document.get(params.get(i - 1));
+            System.err.println(value);
+            if ((!types.get(i - 1).equals("datetime") && value == null)
+                    || (value != null && !isDouble(((BsonString) value).getValue())
+                            && !types
+                                    .get(i - 1).equals("datetime")))
+                return false;
+
+            stmt.setString(i, value == null ? null : ((BsonString) value).getValue());
         }
 
-        System.err.println(stmt.toString());
         // Execute the stored procedure
         stmt.execute();
+        if (isValidation) {
+            stmt.getResultSet();
 
+        }
+        return true;
+    }
+
+    private boolean isDouble(String num) {
+        try {
+            Double.parseDouble(num);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
     }
 
     public void insertToMySQL(String json) throws SQLException {
@@ -169,8 +206,9 @@ public class WriteMysql {
         Statement stmt = connTo.createStatement();
         System.err.println(sql_database_connection_to);
         ResultSet rs = stmt
-                .executeQuery("SELECT PARAMETER_NAME FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_SCHEMA = \""
-                        + database + "\" AND SPECIFIC_NAME = \"" + spName + "\";");
+                .executeQuery(
+                        "SELECT PARAMETER_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_SCHEMA = \""
+                                + database + "\" AND SPECIFIC_NAME = \"" + spName + "\";");
 
         return rs;
     }

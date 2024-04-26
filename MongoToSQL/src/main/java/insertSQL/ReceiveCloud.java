@@ -6,9 +6,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.print.DocFlavor.STRING;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -18,6 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import org.bson.BsonDocument;
+import org.bson.BsonValue;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -35,7 +40,10 @@ public class ReceiveCloud implements MqttCallback {
     public static String sql_table_to = "";
     static WriteMysql sqlConection;
     static String spName;
+    static List<BsonDocument> documentsSent = new LinkedList<>();
     static JTextArea documentLabel = new JTextArea("\n");
+    static String spNameWrong = "";
+    static String spValidate = "";
 
     private static void createWindow() {
         JFrame frame = new JFrame("Receive Cloud");
@@ -62,6 +70,7 @@ public class ReceiveCloud implements MqttCallback {
 
     public static void main(String[] args) {
         createWindow();
+        // Converter para args
         try {
             Properties p = new Properties();
             p.load(new FileInputStream("ReceiveCloud.ini"));
@@ -71,8 +80,9 @@ public class ReceiveCloud implements MqttCallback {
             sql_database_connection_to = p.getProperty("sql_database_connection_to");
             sql_database_user_to = p.getProperty("sql_database_user_to");
             sql_database_password_to = p.getProperty("sql_database_password_to");
-
             spName = p.getProperty("spName");
+            spNameWrong = p.getProperty("spNameWrong");
+            spValidate = p.getProperty("spValidate");
         } catch (Exception e) {
             System.out.println("Error reading ReceiveCloud.ini file " + e);
             JOptionPane.showMessageDialog(null, "The ReceiveCloud.ini file wasn't found.", "Receive Cloud",
@@ -88,7 +98,7 @@ public class ReceiveCloud implements MqttCallback {
     public void connecCloud() {
         int i = 1;
         try {
-            // i = new Random().nextInt(100000);
+            i = new Random().nextInt(100000);
             mqttclient = new MqttClient(cloud_server, "ReceiveCloud" + i + "_" + cloud_topic);
             mqttclient.connect();
             mqttclient.setCallback(this);
@@ -98,16 +108,31 @@ public class ReceiveCloud implements MqttCallback {
         }
     }
 
-    // TODO Nao retirar caso haja SQLException
+    // TODO Se tiver "Sensor" no BSON procura na bd
     @Override
     public void messageArrived(String topic, MqttMessage c) {
+        BsonDocument document = BsonDocument.parse(c.toString());
+        documentsSent.add(document);
+
         try {
-            BsonDocument document = BsonDocument.parse(c.toString());
-            sqlConection.CallToMySQL(spName, document);
-            documentLabel.append(c.toString() + "\n");
-        } catch (Exception e) {
-            e.printStackTrace();
+            if (!callSPValidation(spValidate, documentsSent.getFirst())
+                    && !callCRUD(spName, documentsSent.getFirst())
+                    && !callCRUD(spNameWrong, documentsSent.getFirst()))
+                return;
+        } catch (SQLException e) {
+            return;
         }
+
+        documentLabel.append(c.toString() + "\n");
+        documentsSent.removeFirst();
+    }
+
+    private boolean callSPValidation(String sp, BsonDocument document) throws SQLException {
+        return sqlConection.CallToMySQL(sp, document, true);
+    }
+
+    private boolean callCRUD(String sp, BsonDocument document) throws SQLException {
+        return sqlConection.CallToMySQL(sp, document, false);
     }
 
     @Override

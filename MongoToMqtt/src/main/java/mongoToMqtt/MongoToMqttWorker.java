@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -38,13 +39,15 @@ public class MongoToMqttWorker {
     static private MongoDatabase db;
     static private MqttClient mqttclient;
     static private int pubQos;
+    static private boolean enable_window;
     static JTextArea documentLabel = new JTextArea("\n");
 
     public static void main(String[] args) {
         if (!setAttibutes(args))
             return;
 
-        createWindow();
+        if (enable_window)
+            createWindow();
 
         MongoToMqttWorker mqttSender = new MongoToMqttWorker();
         MongoToMqttWorker mongoReceiver = new MongoToMqttWorker();
@@ -88,8 +91,9 @@ public class MongoToMqttWorker {
     // [4] - collection,
     // [5] - pubQos,
     // [6] - recoverFrom
+    // [7] - enable_window
     private static boolean setAttibutes(String[] args) {
-        if (args == null || args.length != 7)
+        if (args == null || args.length != 8)
             return false;
 
         Integer qos;
@@ -106,6 +110,7 @@ public class MongoToMqttWorker {
         MongoToMqttWorker.collection = args[4];
         MongoToMqttWorker.pubQos = qos;
         MongoToMqttWorker.recoverFrom = args[6];
+        MongoToMqttWorker.enable_window = args[7].equals("true");
 
         return true;
     }
@@ -116,7 +121,7 @@ public class MongoToMqttWorker {
     public void connectCloud() {
         int i = 1;
         try {
-            // i = new Random().nextInt(100000); // Comentar para testar
+            i = new Random().nextInt(100000); // Comentar para testar
             mqttclient = new MqttClient(cloud_server,
                     "CloudToMongo_" + String.valueOf(i) + "_" + "pisid_grupo12");
             mqttclient.connect();
@@ -139,14 +144,17 @@ public class MongoToMqttWorker {
     }
 
     private void sendInitialData() {
-        MongoCursor<Document> it = getData().iterator();
-        while (it.hasNext()) {
-            Document document = it.next();
-            sendMessage(encript(document.toJson()));
+        try {
+            MongoCursor<Document> it = getData().iterator();
+            while (it.hasNext()) {
+                Document document = it.next();
+                sendMessage(encript(document.toJson()));
+            }
+        } catch (NumberFormatException e) {
         }
     }
 
-    private AggregateIterable<Document> getData() {
+    private AggregateIterable<Document> getData() throws NumberFormatException {
         Document objectMatch = new Document("_id", new Document("$gt", getObjectIdToSearch()));
         return db.getCollection(collection)
                 .aggregate(Arrays.asList(new Document("$match",
@@ -154,13 +162,8 @@ public class MongoToMqttWorker {
                         new Document("$sort", new Document("_id", 1))));
     }
 
-    private static ObjectId getObjectIdToSearch() {
-        long miliSeconds;
-        try {
-            miliSeconds = System.currentTimeMillis() - Long.parseLong(recoverFrom) * 1000;
-        } catch (NumberFormatException e) {
-            return null;
-        }
+    private static ObjectId getObjectIdToSearch() throws NumberFormatException {
+        long miliSeconds = System.currentTimeMillis() - Long.parseLong(recoverFrom) * 1000;
         return new ObjectId(new Date(miliSeconds));
     }
 
@@ -171,7 +174,6 @@ public class MongoToMqttWorker {
 
     private void work() {
         sendInitialData();
-
         MongoCursor<ChangeStreamDocument<Document>> it = db.getCollection(collection).watch()
                 .iterator();
         ChangeStreamDocument<Document> changeStreamDoc = null;
@@ -190,7 +192,7 @@ public class MongoToMqttWorker {
         message.setQos(pubQos);
         try {
             mqttclient.publish(cloud_topic, message);
-            documentLabel.append(msg);
+            documentLabel.append(msg + "\n");
         } catch (MqttException e) {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
