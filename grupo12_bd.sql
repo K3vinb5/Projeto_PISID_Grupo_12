@@ -485,7 +485,7 @@ END$$
 DROP PROCEDURE IF EXISTS `ObterListaSensores`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterListaSensores` ()   BEGIN
 
-	SELECT * FROM sensor WHERE IsActive = TRUE;
+	SELECT * FROM sensor s, tiposensor t WHERE s.IDTipoSensor=t.IDTipoSensor AND IsActive = TRUE;
 
 END$$
 
