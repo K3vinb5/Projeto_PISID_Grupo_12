@@ -1,34 +1,66 @@
 package insertSQL;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import java.io.*;
-import java.util.*;
-import java.util.Date;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
-import java.sql.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.Map;
 
-import javax.print.DocFlavor.STRING;
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.BsonValue;
-import org.bson.conversions.Bson;
 
-import java.awt.event.*;
-import java.awt.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * @author Grupo12
  * @version 1.0
  */
 public class WriteMysql {
+
+    /**
+     * Sensor
+     */
+    public class Sensor {
+        private String tipo;
+        private String nome;
+        private String id;
+
+        Sensor(String tipo, String nome, String id) {
+            this.tipo = tipo;
+            this.nome = nome;
+            this.id = id;
+        }
+
+        String getTipo() {
+            return tipo;
+        }
+
+        String getNome() {
+            return nome;
+        }
+
+        String getId() {
+            return id;
+        }
+    }
 
     public static JTextArea documentLabel = new JTextArea("\n");
     public static Connection connTo;
@@ -38,6 +70,7 @@ public class WriteMysql {
     static String database = "";
 
     public static String sql_table_to = "";
+    private static List<Sensor> validSensors = new ArrayList<>();
 
     public WriteMysql(String sql_table_to, String sql_database_connection_to, String sql_database_user_to,
             String sql_database_password_to) {
@@ -120,9 +153,13 @@ public class WriteMysql {
                     sql_database_password_to);
             documentLabel.append("SQl Connection:" + sql_database_connection_to + "\n");
             documentLabel.append("Connection To MariaDB From Suceeded\n");
-        } catch (Exception var2) {
-            System.out.println("Mysql Server Origin down, unable to make the connection. " + var2.getMessage());
+        } catch (Exception e) {
+            System.out.println("Mysql Server Origin down, unable to make the connection. " + e.getMessage());
         }
+    }
+
+    public boolean isDown() {
+        return connTo == null;
     }
 
     public void ReadData() throws SQLException {
@@ -136,7 +173,7 @@ public class WriteMysql {
         }
     }
 
-    public boolean CallToMySQL(String spName, BsonDocument document, boolean isValidation) throws SQLException {
+    public boolean CallToMySQL(String spName, BsonDocument document) throws SQLException {
         ResultSet rs = getSchemaSP(spName);
 
         List<String> params = new ArrayList<>();
@@ -159,7 +196,6 @@ public class WriteMysql {
 
         for (int i = 1; i <= params.size(); i++) {
             BsonValue value = document.get(params.get(i - 1));
-            System.err.println(value);
             if ((!types.get(i - 1).equals("datetime") && value == null)
                     || (value != null && !isDouble(((BsonString) value).getValue())
                             && !types
@@ -168,14 +204,65 @@ public class WriteMysql {
 
             stmt.setString(i, value == null ? null : ((BsonString) value).getValue());
         }
+        if (document.get("Sensor") == null)
+            System.err.println("Helo");
 
         // Execute the stored procedure
         stmt.execute();
-        if (isValidation) {
-            stmt.getResultSet();
-
-        }
         return true;
+    }
+
+    public boolean isSensorValid(String spName, BsonDocument document)
+            throws SQLException {
+        if (document.get("Sensor") == null) {
+            // document.put("Sensor", new BsonString("Not Defined"));
+            return false;
+        }
+        String idSensor = getIdOfSensor("Temperatura", ((BsonString) document.get("Sensor")).getValue());
+        if (idSensor == null) {
+            updateSensors(spName);
+            idSensor = getIdOfSensor("Temperatura", ((BsonString) document.get("Sensor")).getValue());
+        }
+
+        if (idSensor != null) {
+            document.put("Sensor", new BsonString(idSensor));
+            return true;
+        }
+
+        // document.put("Sensor", new BsonString("Not Defined"));
+        return false;
+
+    }
+
+    public boolean CallInsertWrongValues(String tipoMedicao, String tipoDado, BsonDocument document)
+            throws SQLException {
+        CallableStatement stmt = connTo.prepareCall("{call InserirNaoConformes(?,?,?)}");
+        document.remove("_id");
+        stmt.setString(1, document.toJson());
+        stmt.setString(2, tipoMedicao);
+        stmt.setString(3, tipoDado);
+        System.err.println(stmt);
+        stmt.execute();
+        return true;
+    }
+
+    private void updateSensors(String spName) throws SQLException {
+        CallableStatement stmt = connTo.prepareCall("{call " + spName + "()}");
+        stmt.execute();
+        validSensors = new ArrayList<>();
+        ResultSet resultSet = stmt.getResultSet();
+        while (resultSet.next())
+            validSensors.add(new Sensor(resultSet.getString("Designacao"), resultSet.getString("Nome"),
+                    resultSet.getString("IDSensor")));
+
+    }
+
+    private String getIdOfSensor(String tipoSensor, String nomeSensor) {
+        for (Sensor sensor : validSensors)
+            if (sensor.tipo.equals(tipoSensor) && sensor.nome.equals(nomeSensor))
+                return sensor.id;
+
+        return null;
     }
 
     private boolean isDouble(String num) {
@@ -185,6 +272,17 @@ public class WriteMysql {
             return false;
         }
         return true;
+    }
+
+    public boolean isMovementValid(String salaA, String salaB) throws SQLException {
+        Statement stmt = connTo.createStatement();
+        ResultSet rs = stmt
+                .executeQuery(
+                        "SELECT COUNT(*) FROM corredor WHERE salaa =" + salaA + " AND salab =" + salaB + ";");
+        if (rs.next())
+            return rs.getInt(0) != 0;
+
+        return false;
     }
 
     public void insertToMySQL(String json) throws SQLException {

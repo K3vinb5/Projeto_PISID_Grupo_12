@@ -7,7 +7,7 @@ import random
 import threading
 import paho.mqtt.client as mqtt
 
-topic = "pisid_grupo12_maze"
+topic = "pisid_grupo12_maze_simulate"
 
 
 # Mouse Movements

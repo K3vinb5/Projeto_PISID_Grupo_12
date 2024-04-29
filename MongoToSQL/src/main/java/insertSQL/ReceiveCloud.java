@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -12,17 +14,14 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import javax.print.DocFlavor.STRING;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import org.bson.BsonDocument;
-import org.bson.BsonValue;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -40,9 +39,9 @@ public class ReceiveCloud implements MqttCallback {
     public static String sql_table_to = "";
     static WriteMysql sqlConection;
     static String spName;
-    static List<BsonDocument> documentsSent = new LinkedList<>();
+    static List<BsonDocument> documentsToSend = new LinkedList<>();
     static JTextArea documentLabel = new JTextArea("\n");
-    static String spNameWrong = "";
+    static String tipoMedicao = "";
     static String spValidate = "";
 
     private static void createWindow() {
@@ -69,30 +68,44 @@ public class ReceiveCloud implements MqttCallback {
     }
 
     public static void main(String[] args) {
+
+        if (!loadArgs(args))
+            return;
+
         createWindow();
-        // Converter para args
-        try {
-            Properties p = new Properties();
-            p.load(new FileInputStream("ReceiveCloud.ini"));
-            cloud_server = p.getProperty("cloud_server");
-            cloud_topic = p.getProperty("cloud_topic");
-            sql_table_to = p.getProperty("sql_table_to");
-            sql_database_connection_to = p.getProperty("sql_database_connection_to");
-            sql_database_user_to = p.getProperty("sql_database_user_to");
-            sql_database_password_to = p.getProperty("sql_database_password_to");
-            spName = p.getProperty("spName");
-            spNameWrong = p.getProperty("spNameWrong");
-            spValidate = p.getProperty("spValidate");
-        } catch (Exception e) {
-            System.out.println("Error reading ReceiveCloud.ini file " + e);
-            JOptionPane.showMessageDialog(null, "The ReceiveCloud.ini file wasn't found.", "Receive Cloud",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+
         new ReceiveCloud().connecCloud();
 
         sqlConection = new WriteMysql(sql_table_to, sql_database_connection_to, sql_database_user_to,
                 sql_database_password_to);
         sqlConection.connectDatabase_to();
+    }
+
+    // Factory
+    // [0] - cloud_server
+    // [1] - cloud_topic
+    // [2] - sql_table_to
+    // [3] - sql_database_connection_to
+    // [4] - sql_database_user_to
+    // [5] - sql_database_password_to
+    // [6] - spName
+    // [7] - tipoMedicao
+    // [8] - spValidate
+    private static boolean loadArgs(String[] args) {
+        if (args == null || args.length != 9)
+            return false;
+
+        ReceiveCloud.cloud_server = args[0];
+        ReceiveCloud.cloud_topic = args[1];
+        ReceiveCloud.sql_table_to = args[2];
+        ReceiveCloud.sql_database_connection_to = args[3];
+        ReceiveCloud.sql_database_user_to = args[4];
+        ReceiveCloud.sql_database_password_to = args[5];
+        ReceiveCloud.spName = args[6];
+        ReceiveCloud.tipoMedicao = args[7];
+        ReceiveCloud.spValidate = args[8];
+
+        return true;
     }
 
     public void connecCloud() {
@@ -108,31 +121,37 @@ public class ReceiveCloud implements MqttCallback {
         }
     }
 
-    // TODO Se tiver "Sensor" no BSON procura na bd
     @Override
     public void messageArrived(String topic, MqttMessage c) {
+        if (sqlConection.isDown())
+            sqlConection.connectDatabase_to();
         BsonDocument document = BsonDocument.parse(c.toString());
-        documentsSent.add(document);
+        documentsToSend.add(document);
 
         try {
-            if (!callSPValidation(spValidate, documentsSent.getFirst())
-                    && !callCRUD(spName, documentsSent.getFirst())
-                    && !callCRUD(spNameWrong, documentsSent.getFirst()))
-                return;
+            sendMessages(!spValidate.equals("false"));
         } catch (SQLException e) {
-            return;
         }
-
-        documentLabel.append(c.toString() + "\n");
-        documentsSent.removeFirst();
     }
 
-    private boolean callSPValidation(String sp, BsonDocument document) throws SQLException {
-        return sqlConection.CallToMySQL(sp, document, true);
-    }
+    private void sendMessages(boolean enableSPValidation) throws SQLException {
+        boolean callWrongValues = false;
+        while (!documentsToSend.isEmpty()) {
+            callWrongValues = false;
+            if (enableSPValidation
+                    && !sqlConection.isSensorValid(spValidate, documentsToSend.getFirst()))
+                callWrongValues = true;
 
-    private boolean callCRUD(String sp, BsonDocument document) throws SQLException {
-        return sqlConection.CallToMySQL(sp, document, false);
+            if (!callWrongValues && !sqlConection.CallToMySQL(spName, documentsToSend.getFirst()))
+                callWrongValues = true;
+
+            if (callWrongValues && !sqlConection.CallInsertWrongValues(tipoMedicao, "Dado Errado",
+                    documentsToSend.getFirst()))
+                return;
+
+            documentLabel.append(documentsToSend.getFirst().toJson().toString() + "\n");
+            documentsToSend.removeFirst();
+        }
     }
 
     @Override
