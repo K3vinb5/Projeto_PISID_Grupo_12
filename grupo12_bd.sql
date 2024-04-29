@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 26, 2024 at 03:52 PM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.1.12
+-- Tempo de geração: 29-Abr-2024 às 22:54
+-- Versão do servidor: 10.4.25-MariaDB
+-- versão do PHP: 8.1.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,14 +18,14 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `grupo12_bd`
+-- Banco de dados: `grupo12_bd`
 --
 CREATE DATABASE IF NOT EXISTS `grupo12_bd` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `grupo12_bd`;
 
 DELIMITER $$
 --
--- Procedures
+-- Procedimentos
 --
 DROP PROCEDURE IF EXISTS `ApagarExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarExperiencia` (IN `idExperiencia` INT)   BEGIN
@@ -381,7 +381,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirNaoConformes` (IN `registoRe
 END$$
 
 DROP PROCEDURE IF EXISTS `InserirTemperatura`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirTemperatura` (IN `Hora` DATETIME, IN `Leitura` DECIMAL(4,2), IN `Sensor` VARCHAR(50))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirTemperatura` (IN `Hora` DATETIME, IN `Leitura` DECIMAL(4,2), IN `Sensor` INT)   BEGIN
 
     INSERT INTO medicoestemperatura (DataHora, Leitura, Sensor)
     VALUES (Hora, Leitura, Sensor);
@@ -522,7 +522,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `alerta`
+-- Estrutura da tabela `alerta`
 --
 
 DROP TABLE IF EXISTS `alerta`;
@@ -537,10 +537,10 @@ CREATE TABLE IF NOT EXISTS `alerta` (
   `IDExperiencia` int(11) DEFAULT NULL,
   PRIMARY KEY (`IDAlerta`),
   KEY `ExperienciaFK` (`IDExperiencia`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Triggers `alerta`
+-- Acionadores `alerta`
 --
 DROP TRIGGER IF EXISTS `AlertaInsertBefore`;
 DELIMITER $$
@@ -562,7 +562,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `experiencia`
+-- Estrutura da tabela `experiencia`
 --
 
 DROP TABLE IF EXISTS `experiencia`;
@@ -582,10 +582,10 @@ CREATE TABLE IF NOT EXISTS `experiencia` (
   `Investigador` varchar(200) NOT NULL,
   PRIMARY KEY (`IDExperiencia`),
   KEY `experiência_ibfk_1` (`Investigador`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `experiencia`
+-- Extraindo dados da tabela `experiencia`
 --
 
 INSERT INTO `experiencia` (`IDExperiencia`, `Descrição`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TemperaturaAvisoMaximo`, `TemperaturaAvisoMinimo`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `Investigador`) VALUES
@@ -596,7 +596,7 @@ INSERT INTO `experiencia` (`IDExperiencia`, `Descrição`, `DataHoraCriaçãoExp
 (28, 'Experiencia com email NULL', '2024-04-22 22:35:55', 10, 2, 10, '15.00', '25.00', '20.00', '19.00', NULL, NULL, 'fatima@iscte.pt');
 
 --
--- Triggers `experiencia`
+-- Acionadores `experiencia`
 --
 DROP TRIGGER IF EXISTS `ExperienciaDeleteBefore`;
 DELIMITER $$
@@ -811,7 +811,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `medicoesnaoconformes`
+-- Estrutura da tabela `medicoesnaoconformes`
 --
 
 DROP TABLE IF EXISTS `medicoesnaoconformes`;
@@ -823,10 +823,10 @@ CREATE TABLE IF NOT EXISTS `medicoesnaoconformes` (
   `TipoDado` enum('Outlier','Dado Errado') NOT NULL,
   PRIMARY KEY (`IDMedicao`),
   KEY `medicoesnaoconformes_ibfk_1` (`IDExperiencia`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Triggers `medicoesnaoconformes`
+-- Acionadores `medicoesnaoconformes`
 --
 DROP TRIGGER IF EXISTS `MedicoesNaoConformesInsertBefore`;
 DELIMITER $$
@@ -844,7 +844,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `medicoespassagem`
+-- Estrutura da tabela `medicoespassagem`
 --
 
 DROP TABLE IF EXISTS `medicoespassagem`;
@@ -856,10 +856,10 @@ CREATE TABLE IF NOT EXISTS `medicoespassagem` (
   `IDExperiencia` int(11) DEFAULT NULL,
   PRIMARY KEY (`IDMedição`),
   KEY `ExpPassagem` (`IDExperiencia`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Triggers `medicoespassagem`
+-- Acionadores `medicoespassagem`
 --
 DROP TRIGGER IF EXISTS `MedicoesPassagemInsertAfter`;
 DELIMITER $$
@@ -888,7 +888,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `medicoessala`
+-- Estrutura da tabela `medicoessala`
 --
 
 DROP TABLE IF EXISTS `medicoessala`;
@@ -899,10 +899,10 @@ CREATE TABLE IF NOT EXISTS `medicoessala` (
   `Sala` int(11) NOT NULL,
   PRIMARY KEY (`IDMedição`),
   KEY `ExpSalaFK` (`IDExperiencia`)
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `medicoessala`
+-- Extraindo dados da tabela `medicoessala`
 --
 
 INSERT INTO `medicoessala` (`IDMedição`, `IDExperiencia`, `NúmeroRatosFinal`, `Sala`) VALUES
@@ -955,7 +955,7 @@ INSERT INTO `medicoessala` (`IDMedição`, `IDExperiencia`, `NúmeroRatosFinal`,
 (48, 28, 0, 9);
 
 --
--- Triggers `medicoessala`
+-- Acionadores `medicoessala`
 --
 DROP TRIGGER IF EXISTS `MedicoesSalaInsertBefore`;
 DELIMITER $$
@@ -973,7 +973,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `medicoestemperatura`
+-- Estrutura da tabela `medicoestemperatura`
 --
 
 DROP TABLE IF EXISTS `medicoestemperatura`;
@@ -986,10 +986,10 @@ CREATE TABLE IF NOT EXISTS `medicoestemperatura` (
   PRIMARY KEY (`IDMedição`),
   KEY `ExpTemperatura` (`IDExperiencia`),
   KEY `Sensor` (`Sensor`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Triggers `medicoestemperatura`
+-- Acionadores `medicoestemperatura`
 --
 DROP TRIGGER IF EXISTS `MedicoesTemperaturaInsertBefore`;
 DELIMITER $$
@@ -1000,13 +1000,13 @@ CREATE TRIGGER `MedicoesTemperaturaInsertBefore` BEFORE INSERT ON `medicoestempe
     
     SET new.IDExperiencia = idExperiencia;
     
-    -- IF NOT EXISTS (SELECT * FROM sensor WHERE IDSensor = new.Sensor AND IDTipoSensor = (SELECT t.IDTipoSensor FROM tiposensor t WHERE T.Designacao = 'Temperatura') AND IsActive = TRUE) THEN
+    IF NOT EXISTS (SELECT * FROM sensor WHERE IDSensor = new.Sensor AND IDTipoSensor = (SELECT t.IDTipoSensor FROM tiposensor t WHERE T.Designacao = 'Temperatura') AND IsActive = TRUE) THEN
     
-    IF NOT EXISTS (SELECT * FROM sensor WHERE (Nome = new.Sensor OR IDSensor = new.Sensor) AND IDTipoSensor = (SELECT t.IDTipoSensor FROM tiposensor t WHERE T.Designacao = 'Temperatura') AND IsActive = TRUE) THEN
+   -- IF NOT EXISTS (SELECT * FROM sensor WHERE (Nome = new.Sensor OR IDSensor = new.Sensor) AND IDTipoSensor = (SELECT t.IDTipoSensor FROM tiposensor t WHERE T.Designacao = 'Temperatura') AND IsActive = TRUE) THEN
     	-- SET new.Sensor = (SELECT s.IDSensor FROM sensor s WHERE s.Nome = 'Not Defined' AND s.IDTipoSensor = (SELECT * FROM tiposensor t WHERE T.Designacao = 'Not Defined'));
     	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Sensor não reconhecivel!';
     ELSE
-    	SET new.Sensor = (SELECT s.IDSensor FROM sensor s WHERE s.Nome = new.Sensor AND IDTipoSensor = (SELECT t.IDTipoSensor FROM tiposensor t WHERE T.Designacao = 'Temperatura') AND IsActive = TRUE);
+    	SET new.Sensor = (SELECT s.IDSensor FROM sensor s WHERE s.IDSensor = new.Sensor AND IDTipoSensor = (SELECT t.IDTipoSensor FROM tiposensor t WHERE T.Designacao = 'Temperatura') AND IsActive = TRUE);
     END IF;
 
 END
@@ -1016,7 +1016,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `parametroadicional`
+-- Estrutura da tabela `parametroadicional`
 --
 
 DROP TABLE IF EXISTS `parametroadicional`;
@@ -1027,17 +1027,17 @@ CREATE TABLE IF NOT EXISTS `parametroadicional` (
   `ControloSpamTemperatura` int(11) NOT NULL DEFAULT 30,
   `ControloSpamMovimentos` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`IDParâmetro`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `parametroadicional`
+-- Extraindo dados da tabela `parametroadicional`
 --
 
 INSERT INTO `parametroadicional` (`IDParâmetro`, `NrRegistosOutlierTemperatura`, `NrRegistosAlertaTemperatura`, `ControloSpamTemperatura`, `ControloSpamMovimentos`) VALUES
 (1, 25, 15, 30, 0);
 
 --
--- Triggers `parametroadicional`
+-- Acionadores `parametroadicional`
 --
 DROP TRIGGER IF EXISTS `ParametroAdicionalUpdateBefore`;
 DELIMITER $$
@@ -1073,7 +1073,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `sensor`
+-- Estrutura da tabela `sensor`
 --
 
 DROP TABLE IF EXISTS `sensor`;
@@ -1084,10 +1084,10 @@ CREATE TABLE IF NOT EXISTS `sensor` (
   `IsActive` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`IDSensor`),
   KEY `IDTipoSensor` (`IDTipoSensor`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `sensor`
+-- Extraindo dados da tabela `sensor`
 --
 
 INSERT INTO `sensor` (`IDSensor`, `Nome`, `IDTipoSensor`, `IsActive`) VALUES
@@ -1098,7 +1098,7 @@ INSERT INTO `sensor` (`IDSensor`, `Nome`, `IDTipoSensor`, `IsActive`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tiposensor`
+-- Estrutura da tabela `tiposensor`
 --
 
 DROP TABLE IF EXISTS `tiposensor`;
@@ -1107,10 +1107,10 @@ CREATE TABLE IF NOT EXISTS `tiposensor` (
   `Designacao` varchar(50) NOT NULL,
   PRIMARY KEY (`IDTipoSensor`),
   UNIQUE KEY `Designacao` (`Designacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `tiposensor`
+-- Extraindo dados da tabela `tiposensor`
 --
 
 INSERT INTO `tiposensor` (`IDTipoSensor`, `Designacao`) VALUES
@@ -1119,7 +1119,7 @@ INSERT INTO `tiposensor` (`IDTipoSensor`, `Designacao`) VALUES
 (2, 'Temperatura');
 
 --
--- Triggers `tiposensor`
+-- Acionadores `tiposensor`
 --
 DROP TRIGGER IF EXISTS `TipoSensorInsertBefore`;
 DELIMITER $$
@@ -1147,7 +1147,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `utilizador`
+-- Estrutura da tabela `utilizador`
 --
 
 DROP TABLE IF EXISTS `utilizador`;
@@ -1157,10 +1157,10 @@ CREATE TABLE IF NOT EXISTS `utilizador` (
   `Telefone` varchar(12) DEFAULT NULL,
   `RemocaoLogica` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`Email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `utilizador`
+-- Extraindo dados da tabela `utilizador`
 --
 
 INSERT INTO `utilizador` (`Email`, `Nome`, `Telefone`, `RemocaoLogica`) VALUES
@@ -1172,8 +1172,8 @@ INSERT INTO `utilizador` (`Email`, `Nome`, `Telefone`, `RemocaoLogica`) VALUES
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `v_expadecorrer`
--- (See below for the actual view)
+-- Estrutura stand-in para vista `v_expadecorrer`
+-- (Veja abaixo para a view atual)
 --
 DROP VIEW IF EXISTS `v_expadecorrer`;
 CREATE TABLE IF NOT EXISTS `v_expadecorrer` (
@@ -1193,8 +1193,8 @@ CREATE TABLE IF NOT EXISTS `v_expadecorrer` (
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `v_utilizador`
--- (See below for the actual view)
+-- Estrutura stand-in para vista `v_utilizador`
+-- (Veja abaixo para a view atual)
 --
 DROP VIEW IF EXISTS `v_utilizador`;
 CREATE TABLE IF NOT EXISTS `v_utilizador` (
@@ -1207,7 +1207,7 @@ CREATE TABLE IF NOT EXISTS `v_utilizador` (
 -- --------------------------------------------------------
 
 --
--- Structure for view `v_expadecorrer`
+-- Estrutura para vista `v_expadecorrer`
 --
 DROP TABLE IF EXISTS `v_expadecorrer`;
 
@@ -1217,7 +1217,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- --------------------------------------------------------
 
 --
--- Structure for view `v_utilizador`
+-- Estrutura para vista `v_utilizador`
 --
 DROP TABLE IF EXISTS `v_utilizador`;
 
@@ -1225,48 +1225,48 @@ DROP VIEW IF EXISTS `v_utilizador`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_utilizador`  AS SELECT `u`.`Email` AS `Email`, `u`.`Nome` AS `Nome`, `u`.`Telefone` AS `Telefone`, `u`.`RemocaoLogica` AS `RemocaoLogica` FROM `utilizador` AS `u` WHERE `u`.`Email` = substring_index(user(),'@',2)  ;
 
 --
--- Constraints for dumped tables
+-- Restrições para despejos de tabelas
 --
 
 --
--- Constraints for table `alerta`
+-- Limitadores para a tabela `alerta`
 --
 ALTER TABLE `alerta`
   ADD CONSTRAINT `ExperienciaFK` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON UPDATE CASCADE;
 
 --
--- Constraints for table `experiencia`
+-- Limitadores para a tabela `experiencia`
 --
 ALTER TABLE `experiencia`
   ADD CONSTRAINT `experiencia_ibfk_1` FOREIGN KEY (`Investigador`) REFERENCES `utilizador` (`Email`) ON UPDATE CASCADE;
 
 --
--- Constraints for table `medicoesnaoconformes`
+-- Limitadores para a tabela `medicoesnaoconformes`
 --
 ALTER TABLE `medicoesnaoconformes`
   ADD CONSTRAINT `medicoesnaoconformes_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- Constraints for table `medicoespassagem`
+-- Limitadores para a tabela `medicoespassagem`
 --
 ALTER TABLE `medicoespassagem`
   ADD CONSTRAINT `medicoespassagem_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- Constraints for table `medicoessala`
+-- Limitadores para a tabela `medicoessala`
 --
 ALTER TABLE `medicoessala`
   ADD CONSTRAINT `medicoessala_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- Constraints for table `medicoestemperatura`
+-- Limitadores para a tabela `medicoestemperatura`
 --
 ALTER TABLE `medicoestemperatura`
   ADD CONSTRAINT `medicoestemperatura_ibfk_1` FOREIGN KEY (`IDExperiencia`) REFERENCES `experiencia` (`IDExperiencia`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `medicoestemperatura_ibfk_2` FOREIGN KEY (`Sensor`) REFERENCES `sensor` (`IDSensor`) ON UPDATE CASCADE;
 
 --
--- Constraints for table `sensor`
+-- Limitadores para a tabela `sensor`
 --
 ALTER TABLE `sensor`
   ADD CONSTRAINT `sensor_ibfk_1` FOREIGN KEY (`IDTipoSensor`) REFERENCES `tiposensor` (`IDTipoSensor`) ON UPDATE CASCADE;
