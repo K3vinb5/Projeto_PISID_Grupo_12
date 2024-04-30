@@ -38,6 +38,11 @@ public class FatherMain {
     static String relativePath = "";
     static String mongoURI = "";
     static Manager manager;
+    static List<String> tipoMedicoes = new ArrayList<>();
+    static List<String> spValidates = new ArrayList<>();
+    static List<String> sql_database_connection_to_aux = new ArrayList<>();
+    static List<String> sql_database_user_to_aux = new ArrayList<>();
+    static List<String> sql_database_password_to_aux = new ArrayList<>();
 
     public static void main(String[] args) {
         if (!loadArgs(args))
@@ -104,8 +109,13 @@ public class FatherMain {
                     public void createAndRunWorkers() {
                         for (int i = 0; i < mongo_collections.size(); i++) {
                             runWorker(
-                                    new String[] { cloud_server, cloud_topics.get(i), mongoURI, mongo_database,
-                                            mongo_collections.get(i), enable_window });
+                                    new String[] { cloud_server, cloud_topics.get(i),
+                                            sql_tables.get(i),
+                                            sql_database_connection_to,
+                                            sql_database_user_to, sql_database_password_to, spNames.get(i),
+                                            tipoMedicoes.get(i), spValidates.get(i),
+                                            sql_database_connection_to_aux.get(i),
+                                            sql_database_user_to_aux.get(i), sql_database_password_to_aux.get(i) });
                         }
                     }
                 };
@@ -172,19 +182,30 @@ public class FatherMain {
     // Mqtt to mySQL
     // [0] - cloud_server
     // [1] - cloud_topic
-    // [2] - sql_database_connection_to=jdbc:mariadb://localhost:3306/grupo12_bd
-    // [3] - sql_database_user_to =root
-    // [4] - sql_database_password_to=
-    // [5] - sql_table_to=medicoestemperatura
-    // [6] - spName=InserirTemperatura
+    // [2] - sql_table_to
+    // [3] - sql_database_connection_to
+    // [4] - sql_database_user_to
+    // [5] - sql_database_password_to
+    // [6] - spName
+    // [7] - tipoMedicao
+    // [8] - spValidate
+    // [9] - sql_database_connection_to_aux
+    // [10] - sql_database_user_to_aux
+    // [11] - sql_database_password_to_aux
     private static void setMqttToMySQL(Properties p) {
         cloud_server = p.getProperty("cloud_server");
         cloud_topics = Arrays.stream(p.getProperty("cloud_topics").split(",")).toList();
+        sql_tables = Arrays.stream(p.getProperty("sql_tables").split(",")).toList();
         sql_database_connection_to = p.getProperty("sql_database_connection_to");
         sql_database_user_to = p.getProperty("sql_database_user_to");
         sql_database_password_to = p.getProperty("sql_database_password_to");
-        sql_tables = Arrays.stream(p.getProperty("sql_tables").split(",")).toList();
         spNames = Arrays.stream(p.getProperty("spNames").split(",")).toList();
+        tipoMedicoes = Arrays.stream(p.getProperty("tipoMedicoes").split(",")).toList();
+        spValidates = Arrays.stream(p.getProperty("spValidates").split(",")).toList();
+        sql_database_connection_to_aux = Arrays.stream(p.getProperty("sql_database_connection_to_aux").split(","))
+                .toList();
+        sql_database_user_to_aux = Arrays.stream(p.getProperty("sql_database_user_to_aux").split(",")).toList();
+        sql_database_password_to_aux = Arrays.stream(p.getProperty("sql_database_password_to_aux").split(",")).toList();
     }
 
     /**

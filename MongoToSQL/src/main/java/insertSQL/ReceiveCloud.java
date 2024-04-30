@@ -22,6 +22,8 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import org.bson.BsonDocument;
+import org.bson.BsonString;
+import org.bson.BsonValue;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -38,11 +40,15 @@ public class ReceiveCloud implements MqttCallback {
     public static String sql_database_user_to = "";
     public static String sql_table_to = "";
     static WriteMysql sqlConection;
+    static WriteMysql sqlConectionAUX;
     static String spName;
     static List<BsonDocument> documentsToSend = new LinkedList<>();
     static JTextArea documentLabel = new JTextArea("\n");
     static String tipoMedicao = "";
     static String spValidate = "";
+    static String sql_database_connection_to_aux = "";
+    static String sql_database_user_to_aux = "";
+    static String sql_database_password_to_aux = "";
 
     private static void createWindow() {
         JFrame frame = new JFrame("Receive Cloud");
@@ -78,7 +84,11 @@ public class ReceiveCloud implements MqttCallback {
 
         sqlConection = new WriteMysql(sql_table_to, sql_database_connection_to, sql_database_user_to,
                 sql_database_password_to);
-        sqlConection.connectDatabase_to();
+        if (!sql_database_connection_to_aux.equals("false"))
+            sqlConectionAUX = new WriteMysql(null, sql_database_connection_to_aux, sql_database_user_to_aux,
+                    sql_database_password_to_aux);
+        sqlConectionAUX.connectDatabase_to();
+        // sqlConection.connectDatabase_to();
     }
 
     // Factory
@@ -91,8 +101,11 @@ public class ReceiveCloud implements MqttCallback {
     // [6] - spName
     // [7] - tipoMedicao
     // [8] - spValidate
+    // [9] - sql_database_connection_to_aux
+    // [10] - sql_database_user_to_aux
+    // [11] - sql_database_password_to_aux
     private static boolean loadArgs(String[] args) {
-        if (args == null || args.length != 9)
+        if (args == null || args.length != 12)
             return false;
 
         ReceiveCloud.cloud_server = args[0];
@@ -104,6 +117,9 @@ public class ReceiveCloud implements MqttCallback {
         ReceiveCloud.spName = args[6];
         ReceiveCloud.tipoMedicao = args[7];
         ReceiveCloud.spValidate = args[8];
+        ReceiveCloud.sql_database_connection_to_aux = args[9];
+        ReceiveCloud.sql_database_user_to_aux = args[10];
+        ReceiveCloud.sql_database_password_to_aux = args[11];
 
         return true;
     }
@@ -123,23 +139,36 @@ public class ReceiveCloud implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage c) {
+        long s = System.currentTimeMillis();
+        sqlConection.connectDatabase_to();
         if (sqlConection.isDown())
             sqlConection.connectDatabase_to();
+
         BsonDocument document = BsonDocument.parse(c.toString());
         documentsToSend.add(document);
 
+        if (sqlConection.isDown())
+            return;
+
         try {
-            sendMessages(!spValidate.equals("false"));
+            sendMessages(!spValidate.equals("false"), !sql_database_connection_to_aux.equals("false"));
         } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            sqlConection.close();
+            System.err.println("Connect: " + (System.currentTimeMillis() - s));
         }
     }
 
-    private void sendMessages(boolean enableSPValidation) throws SQLException {
+    private void sendMessages(boolean enableSPValidation, boolean enableAuxBDValidation) throws SQLException {
         boolean callWrongValues = false;
         while (!documentsToSend.isEmpty()) {
             callWrongValues = false;
             if (enableSPValidation
                     && !sqlConection.isSensorValid(spValidate, documentsToSend.getFirst()))
+                callWrongValues = true;
+
+            if (enableAuxBDValidation && !sqlConectionAUX.isMovementValid(documentsToSend.getFirst()))
                 callWrongValues = true;
 
             if (!callWrongValues && !sqlConection.CallToMySQL(spName, documentsToSend.getFirst()))

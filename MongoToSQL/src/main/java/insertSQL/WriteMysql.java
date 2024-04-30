@@ -63,21 +63,21 @@ public class WriteMysql {
     }
 
     public static JTextArea documentLabel = new JTextArea("\n");
-    public static Connection connTo;
-    public static String sql_database_connection_to = "";
-    public static String sql_database_password_to = "";
-    public static String sql_database_user_to = "";
+    public Connection connTo;
+    public String sql_database_connection_to = "";
+    public String sql_database_password_to = "";
+    public String sql_database_user_to = "";
     static String database = "";
+    public String sql_table_to = "";
 
-    public static String sql_table_to = "";
     private static List<Sensor> validSensors = new ArrayList<>();
 
     public WriteMysql(String sql_table_to, String sql_database_connection_to, String sql_database_user_to,
             String sql_database_password_to) {
-        WriteMysql.sql_table_to = sql_table_to;
-        WriteMysql.sql_database_connection_to = sql_database_connection_to;
-        WriteMysql.sql_database_user_to = sql_database_user_to;
-        WriteMysql.sql_database_password_to = sql_database_password_to;
+        this.sql_table_to = sql_table_to;
+        this.sql_database_connection_to = sql_database_connection_to;
+        this.sql_database_user_to = sql_database_user_to;
+        this.sql_database_password_to = sql_database_password_to;
         String[] db_conect = sql_database_connection_to.split("/");
         WriteMysql.database = db_conect[db_conect.length - 1];
     }
@@ -112,7 +112,7 @@ public class WriteMysql {
      * @return A Sql Insert command where the columns are the keys and the values
      *         the entries
      */
-    private static String JsonToSqlInsertCommand(String json) {
+    private String JsonToSqlInsertCommand(String json) {
         JsonObject jsonObject = new Gson().fromJson(json,
                 JsonObject.class);
         String fields = "(";
@@ -129,7 +129,7 @@ public class WriteMysql {
                 ";";
     }
 
-    private static String insertCommand(String json) {
+    private String insertCommand(String json) {
         JsonObject jsonObject = new Gson().fromJson(json,
                 JsonObject.class);
         String fields = "(";
@@ -160,6 +160,19 @@ public class WriteMysql {
 
     public boolean isDown() {
         return connTo == null;
+        // try {
+        // getSchemaSP("ObterListaSensores");
+        // return false;
+        // } catch (SQLException | NullPointerException e) {
+        // return true;
+        // }
+    }
+
+    public void close() {
+        try {
+            connTo.close();
+        } catch (SQLException e) {
+        }
     }
 
     public void ReadData() throws SQLException {
@@ -204,8 +217,6 @@ public class WriteMysql {
 
             stmt.setString(i, value == null ? null : ((BsonString) value).getValue());
         }
-        if (document.get("Sensor") == null)
-            System.err.println("Helo");
 
         // Execute the stored procedure
         stmt.execute();
@@ -241,7 +252,6 @@ public class WriteMysql {
         stmt.setString(1, document.toJson());
         stmt.setString(2, tipoMedicao);
         stmt.setString(3, tipoDado);
-        System.err.println(stmt);
         stmt.execute();
         return true;
     }
@@ -274,13 +284,22 @@ public class WriteMysql {
         return true;
     }
 
-    public boolean isMovementValid(String salaA, String salaB) throws SQLException {
+    public boolean isMovementValid(BsonDocument document) throws SQLException {
+        String salaA = document.get("SalaOrigem") == null ? null : ((BsonString) document.get("SalaOrigem")).getValue();
+        String salaB = document.get("SalaDestino") == null ? null
+                : ((BsonString) document.get("SalaDestino")).getValue();
+        if (salaA == null || salaB == null)
+            return false;
         Statement stmt = connTo.createStatement();
         ResultSet rs = stmt
                 .executeQuery(
-                        "SELECT COUNT(*) FROM corredor WHERE salaa =" + salaA + " AND salab =" + salaB + ";");
+                        "SELECT COUNT(*) FROM corredor WHERE salaa =" + Integer.parseInt(
+                                salaA) + " AND salab =" + Integer.parseInt(salaB) + ";");
+        // ResultSet rs = stmt
+        // .executeQuery(
+        // "SELECT COUNT(*) FROM corredor WHERE salaa = 1 AND salab = 2");
         if (rs.next())
-            return rs.getInt(0) != 0;
+            return rs.getInt("COUNT(*)") != 0;
 
         return false;
     }
@@ -302,7 +321,6 @@ public class WriteMysql {
 
     public ResultSet getSchemaSP(String spName) throws SQLException {
         Statement stmt = connTo.createStatement();
-        System.err.println(sql_database_connection_to);
         ResultSet rs = stmt
                 .executeQuery(
                         "SELECT PARAMETER_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_SCHEMA = \""
