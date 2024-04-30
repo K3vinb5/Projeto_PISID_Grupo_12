@@ -51,7 +51,7 @@ public class ReceiveCloud implements MqttCallback {
     static String sql_database_password_to_aux = "";
 
     private static void createWindow() {
-        JFrame frame = new JFrame("Receive Cloud");
+        JFrame frame = new JFrame("Receive Cloud - " + tipoMedicao);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JLabel textLabel = new JLabel("Data from broker: ", SwingConstants.CENTER);
         textLabel.setPreferredSize(new Dimension(600, 30));
@@ -84,10 +84,24 @@ public class ReceiveCloud implements MqttCallback {
 
         sqlConection = new WriteMysql(sql_table_to, sql_database_connection_to, sql_database_user_to,
                 sql_database_password_to);
-        if (!sql_database_connection_to_aux.equals("false"))
+        if (!sql_database_connection_to_aux.equals("false")) {
             sqlConectionAUX = new WriteMysql(null, sql_database_connection_to_aux, sql_database_user_to_aux,
                     sql_database_password_to_aux);
-        sqlConectionAUX.connectDatabase_to();
+            sqlConectionAUX.connectDatabase_to();
+        }
+
+        documentLabel.append(cloud_server + "\n");
+        documentLabel.append(cloud_topic + "\n");
+        documentLabel.append(sql_table_to + "\n");
+        documentLabel.append(sql_database_connection_to + "\n");
+        documentLabel.append(sql_database_user_to + "\n");
+        documentLabel.append(sql_database_password_to + "\n");
+        documentLabel.append(spName + "\n");
+        documentLabel.append(tipoMedicao + "\n");
+        documentLabel.append(spValidate + "\n");
+        documentLabel.append(sql_database_connection_to_aux + "\n");
+        documentLabel.append(sql_database_user_to_aux + "\n");
+        documentLabel.append(sql_database_password_to_aux + "\n");
         // sqlConection.connectDatabase_to();
     }
 
@@ -141,8 +155,8 @@ public class ReceiveCloud implements MqttCallback {
     public void messageArrived(String topic, MqttMessage c) {
         long s = System.currentTimeMillis();
         sqlConection.connectDatabase_to();
-        if (sqlConection.isDown())
-            sqlConection.connectDatabase_to();
+        // if (sqlConection.isDown())
+        // sqlConection.connectDatabase_to();
 
         BsonDocument document = BsonDocument.parse(c.toString());
         documentsToSend.add(document);

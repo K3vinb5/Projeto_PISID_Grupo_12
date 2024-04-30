@@ -62,13 +62,13 @@ public class WriteMysql {
         }
     }
 
-    public static JTextArea documentLabel = new JTextArea("\n");
-    public Connection connTo;
-    public String sql_database_connection_to = "";
-    public String sql_database_password_to = "";
-    public String sql_database_user_to = "";
-    static String database = "";
-    public String sql_table_to = "";
+    private static JTextArea documentLabel = new JTextArea("\n");
+    private Connection connTo;
+    private String sql_database_connection_to = "";
+    private String sql_database_password_to = "";
+    private String sql_database_user_to = "";
+    private String database = "";
+    private String sql_table_to = "";
 
     private static List<Sensor> validSensors = new ArrayList<>();
 
@@ -79,7 +79,7 @@ public class WriteMysql {
         this.sql_database_user_to = sql_database_user_to;
         this.sql_database_password_to = sql_database_password_to;
         String[] db_conect = sql_database_connection_to.split("/");
-        WriteMysql.database = db_conect[db_conect.length - 1];
+        this.database = db_conect[db_conect.length - 1];
     }
 
     private static void createWindow() {
