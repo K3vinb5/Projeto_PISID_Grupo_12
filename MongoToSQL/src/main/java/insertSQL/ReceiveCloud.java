@@ -49,6 +49,7 @@ public class ReceiveCloud implements MqttCallback {
     static String sql_database_connection_to_aux = "";
     static String sql_database_user_to_aux = "";
     static String sql_database_password_to_aux = "";
+    static OutlierDetector iqr;
 
     private static void createWindow() {
         JFrame frame = new JFrame("Receive Cloud - " + tipoMedicao);
@@ -90,18 +91,20 @@ public class ReceiveCloud implements MqttCallback {
             sqlConectionAUX.connectDatabase_to();
         }
 
-        documentLabel.append(cloud_server + "\n");
-        documentLabel.append(cloud_topic + "\n");
-        documentLabel.append(sql_table_to + "\n");
-        documentLabel.append(sql_database_connection_to + "\n");
-        documentLabel.append(sql_database_user_to + "\n");
-        documentLabel.append(sql_database_password_to + "\n");
-        documentLabel.append(spName + "\n");
-        documentLabel.append(tipoMedicao + "\n");
-        documentLabel.append(spValidate + "\n");
-        documentLabel.append(sql_database_connection_to_aux + "\n");
-        documentLabel.append(sql_database_user_to_aux + "\n");
-        documentLabel.append(sql_database_password_to_aux + "\n");
+        // documentLabel.append(cloud_server + "\n");
+        // documentLabel.append(cloud_topic + "\n");
+        // documentLabel.append(sql_table_to + "\n");
+        // documentLabel.append(sql_database_connection_to + "\n");
+        // documentLabel.append(sql_database_user_to + "\n");
+        // documentLabel.append(sql_database_password_to + "\n");
+        // documentLabel.append(spName + "\n");
+        // documentLabel.append(tipoMedicao + "\n");
+        // documentLabel.append(spValidate + "\n");
+        // documentLabel.append(sql_database_connection_to_aux + "\n");
+        // documentLabel.append(sql_database_user_to_aux + "\n");
+        // documentLabel.append(sql_database_password_to_aux + "\n");
+
+        iqr = new OutlierDetector();
         // sqlConection.connectDatabase_to();
     }
 
@@ -175,26 +178,43 @@ public class ReceiveCloud implements MqttCallback {
     }
 
     private void sendMessages(boolean enableSPValidation, boolean enableAuxBDValidation) throws SQLException {
-        boolean callWrongValues = false;
-        while (!documentsToSend.isEmpty()) {
-            callWrongValues = false;
-            if (enableSPValidation
-                    && !sqlConection.isSensorValid(spValidate, documentsToSend.getFirst()))
-                callWrongValues = true;
+        try {
 
-            if (enableAuxBDValidation && !sqlConectionAUX.isMovementValid(documentsToSend.getFirst()))
-                callWrongValues = true;
+            boolean callWrongValues = false;
+            String tipoDado = "Dado Errado";
+            while (!documentsToSend.isEmpty()) {
+                callWrongValues = false;
+                if (enableSPValidation
+                        && !sqlConection.isSensorValid(spValidate, documentsToSend.getFirst())
+                        || !sqlConection.isDouble(
+                                (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))
+                    callWrongValues = true;
 
-            if (!callWrongValues && !sqlConection.CallToMySQL(spName, documentsToSend.getFirst()))
-                callWrongValues = true;
+                if (enableAuxBDValidation && !sqlConectionAUX.isMovementValid(documentsToSend.getFirst()))
+                    callWrongValues = true;
 
-            if (callWrongValues && !sqlConection.CallInsertWrongValues(tipoMedicao, "Dado Errado",
-                    documentsToSend.getFirst()))
-                return;
+                if (enableSPValidation && !callWrongValues
+                        && iqr.checkOutlier(Double
+                                .parseDouble((((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))) {
+                    tipoDado = "Outlier";
+                    callWrongValues = true;
+                }
 
-            documentLabel.append(documentsToSend.getFirst().toJson().toString() + "\n");
-            documentsToSend.removeFirst();
+                if (!callWrongValues && !sqlConection.CallToMySQL(spName, documentsToSend.getFirst()))
+                    callWrongValues = true;
+
+                if (callWrongValues && !sqlConection.CallInsertWrongValues(tipoMedicao,
+                        tipoDado,
+                        documentsToSend.getFirst()))
+                    return;
+
+                documentLabel.append(documentsToSend.getFirst().toJson().toString() + "\n");
+                documentsToSend.removeFirst();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
     }
 
     @Override

@@ -275,7 +275,7 @@ public class WriteMysql {
         return null;
     }
 
-    private boolean isDouble(String num) {
+    public boolean isDouble(String num) {
         try {
             Double.parseDouble(num);
         } catch (NumberFormatException e) {
