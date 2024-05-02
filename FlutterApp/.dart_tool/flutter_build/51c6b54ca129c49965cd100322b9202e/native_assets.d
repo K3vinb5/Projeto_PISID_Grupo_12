@@ -1,1 +1,0 @@
- /home/kevin/Documents/3º\ ano/2º\ Semestre/PISID/Projeto_PISID_Grupo_12/FlutterApp/.dart_tool/flutter_build/51c6b54ca129c49965cd100322b9202e/native_assets.yaml: 
