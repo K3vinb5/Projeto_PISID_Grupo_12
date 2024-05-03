@@ -16,6 +16,21 @@ import javax.swing.JOptionPane;
  */
 public class FatherMain {
 
+    // public static class ProcessBundle {
+    // private Process process;
+    // private ProcessBuilder processBuilder;
+
+    // ProcessBundle(Process process, ProcessBuilder processBuilder) {
+    // this.process = process;
+    // this.processBuilder = processBuilder;
+    // }
+
+    // public void setProcess(Process process) {
+    // this.process = process;
+    // }
+
+    // }
+
     static String mongo_user = "";
     static String mongo_password = "";
     static String mongo_address = "";
@@ -43,6 +58,7 @@ public class FatherMain {
     static List<String> sql_database_connection_to_aux = new ArrayList<>();
     static List<String> sql_database_user_to_aux = new ArrayList<>();
     static List<String> sql_database_password_to_aux = new ArrayList<>();
+    // static List<ProcessBundle> processesbBundles = new ArrayList<>();
 
     public static void main(String[] args) {
         if (!loadArgs(args))
@@ -51,7 +67,23 @@ public class FatherMain {
         createMongoURI();
 
         manager.createAndRunWorkers();
+
+        // checkChildren();
+
     }
+
+    // static void checkChildren() {
+    // while (true) {
+    // try {
+    // for (int i = 0; i < processesbBundles.size(); i++)
+    // if (!processesbBundles.get(i).process.isAlive())
+    // processesbBundles.get(i).setProcess(processesbBundles.get(i).processBuilder.start());
+
+    // Thread.sleep(5000);
+    // } catch (InterruptedException | IOException _) {
+    // }
+    // }
+    // }
 
     // Factory
     // [0] - ini File
@@ -115,7 +147,9 @@ public class FatherMain {
                                             sql_database_user_to, sql_database_password_to, spNames.get(i),
                                             tipoMedicoes.get(i), spValidates.get(i),
                                             sql_database_connection_to_aux.get(i),
-                                            sql_database_user_to_aux.get(i), sql_database_password_to_aux.get(i) });
+                                            sql_database_user_to_aux.get(i),
+                                            sql_database_password_to_aux.get(i) });
+
                         }
                     }
                 };
@@ -228,25 +262,29 @@ public class FatherMain {
             String home = System.getProperty("user.home");
             ProcessBuilder pb = new ProcessBuilder(javaPath, "-cp",
                     ".;" + home
-                            + "\\.m2\\repository\\org\\eclipse\\paho\\org.eclipse.paho.client.mqttv3\\1.1.0\\org.eclipse.paho.client.mqttv3-1.1.0.jar;"
+                            + "//.m2//repository//org//eclipse//paho//org.eclipse.paho.client.mqttv3//1.1.0//org.eclipse.paho.client.mqttv3-1.1.0.jar;"
                             + home
-                            + "\\.m2\\repository\\org\\mongodb\\mongo-java-driver\\3.6.3\\mongo-java-driver-3.6.3.jar;"
-                            + home + "\\.m2\\repository\\org\\mongodb\\bson\\3.10.1\\bson-3.10.1.jar"
-                            + home
-                            + "\\.m2\\repository\\org\\mariadb\\jdbc\\mariadb-java-client\\3.3.3\\mariadb-java-client-3.3.3.jar"
-                            + home
-                            + "\\.m2\\repository\\com\\mysql\\mysql-connector-j\\8.3.0\\mysql-connector-j-8.3.0.jar"
-                            + home + "\\.m2\\repository\\com\\google\\code\\gson\\gson\\2.10.1\\gson-2.10.1.jar"
-                            + home + "\\.m2\\repository\\org\\slf4j\\slf4j-api\\2.0.13\\slf4j-api-2.0.13.jar",
-                    relativePath);
+                            + "//.m2//repository//org//mongodb//mongo-java-driver//3.6.3//mongo-java-driver-3.6.3.jar;"
+                            + home + "//.m2//repository//org//mongodb//bson//3.10.1//bson-3.10.1.jar"
+                    // home +
+                    // "\\.m2\\repository\\org\\mariadb\\jdbc\\mariadb-java-client\\3.3.3\\mariadb-java-client-3.3.3.jar"
+                    // + home
+                    // +
+                    // "\\.m2\\repository\\com\\mysql\\mysql-connector-j\\8.3.0\\mysql-connector-j-8.3.0.jar"
+                    // + home +
+                    // "\\.m2\\repository\\com\\google\\code\\gson\\gson\\2.10.1\\gson-2.10.1.jar"
+                    // + home +
+                    // "\\.m2\\repository\\org\\slf4j\\slf4j-api\\2.0.13\\slf4j-api-2.0.13.jar",
+                    , relativePath);
             // TODO fix this mess
             // ProcessBuilder pb = new ProcessBuilder(javaPath, "-jar",
             // "./target/CloudToMongoWorker.jar");
             pb.directory(new File(System.getProperty("user.dir")));
             pb.command().addAll(List.of(arguments));
 
-            pb.start();
+            Process process = pb.start();
 
+            // processesbBundles.add(new ProcessBundle(process, pb));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

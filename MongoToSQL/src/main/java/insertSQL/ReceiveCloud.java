@@ -81,8 +81,6 @@ public class ReceiveCloud implements MqttCallback {
 
         createWindow();
 
-        new ReceiveCloud().connecCloud();
-
         sqlConection = new WriteMysql(sql_table_to, sql_database_connection_to, sql_database_user_to,
                 sql_database_password_to);
         if (!sql_database_connection_to_aux.equals("false")) {
@@ -90,6 +88,8 @@ public class ReceiveCloud implements MqttCallback {
                     sql_database_password_to_aux);
             sqlConectionAUX.connectDatabase_to();
         }
+
+        new ReceiveCloud().connecCloud();
 
         // documentLabel.append(cloud_server + "\n");
         // documentLabel.append(cloud_topic + "\n");
@@ -185,12 +185,13 @@ public class ReceiveCloud implements MqttCallback {
             while (!documentsToSend.isEmpty()) {
                 callWrongValues = false;
                 if (enableSPValidation
-                        && !sqlConection.isSensorValid(spValidate, documentsToSend.getFirst())
-                        || !sqlConection.isDouble(
-                                (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))
+                        && (!sqlConection.isSensorValid(spValidate, documentsToSend.getFirst())
+                                || !sqlConection.isDouble(
+                                        (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue()))))
                     callWrongValues = true;
 
-                if (enableAuxBDValidation && !sqlConectionAUX.isMovementValid(documentsToSend.getFirst()))
+                if (enableAuxBDValidation && !sqlConectionAUX.isDown()
+                        && !sqlConectionAUX.isMovementValid(documentsToSend.getFirst()))
                     callWrongValues = true;
 
                 if (enableSPValidation && !callWrongValues
