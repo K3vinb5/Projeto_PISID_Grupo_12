@@ -25,14 +25,22 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>3.6.3</version>
+            <version>3.12.14</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.mongodb/bson -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>bson</artifactId>
-            <version>3.10.1</version>
+            <version>4.11.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -53,12 +61,28 @@
                     <target>16</target>
                     <includes>
                         <include>cloudToMongo/CloudToMongoWorker.java</include>
+                        <include>cloudToMongo/CollectionPersonalized.java</include>
                     </includes>
                 </configuration>
             </plugin>
+
+            <!-- JAR Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>cloudToMongo.CloudToMongoWorker</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
         </plugins>
+
 
     </build>
 
 </project>
-

@@ -7,7 +7,7 @@ import random
 import threading
 import paho.mqtt.client as mqtt
 
-topic = "pisid_grupo12_maze"
+topic = "pisid_grupo12_maze_simulate"
 
 
 # Mouse Movements
@@ -62,8 +62,10 @@ def sendMqttRoom(currentRoom, nextRoomToGo):
 
 
 # Needs callback_api_version
-# clientMqttRoom = mqtt.Client(client_id="clientIDRoom", callback_api_version=mqtt.CallbackAPIVersion.VERSION1)
-clientMqttRoom = mqtt.Client(client_id="clientIDRoom")
+clientMqttRoom = mqtt.Client(
+    client_id="clientIDRoom", callback_api_version=mqtt.CallbackAPIVersion.VERSION1
+)
+# clientMqttRoom = mqtt.Client(client_id="clientIDRoom")
 clientMqttRoom.on_connect = on_connectMqttRoom
 clientMqttRoom.on_disconnect = on_disconnectMqttRoom
 clientMqttRoom.connect("broker.mqttdashboard.com", 1883)
