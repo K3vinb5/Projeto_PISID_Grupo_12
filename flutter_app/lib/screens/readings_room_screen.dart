@@ -1,39 +1,19 @@
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
-import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 
-
-class readingsrooms extends StatelessWidget {
-  const readingsrooms({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    const appTitle = 'Mice  / Room';
-
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text(appTitle),
-      ),
-      body: const ReadingsMain(),
-    );
-  }
-}
-
-
-class ReadingsMain extends StatefulWidget {
-  const ReadingsMain({Key? key}) : super(key: key);
+class ReadingsRoomScreen extends StatefulWidget {
+  const ReadingsRoomScreen({Key? key}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _ReadingsRoomScreenState createState() => _ReadingsRoomScreenState();
 }
 
-class _MyHomePageState extends State<ReadingsMain> {
+class _ReadingsRoomScreenState extends State<ReadingsRoomScreen> {
   late int showingTooltip;
   late Timer timer;
 
@@ -71,8 +51,7 @@ class _MyHomePageState extends State<ReadingsMain> {
       readingsValues.add(0.0);
     }
     //sleep(Duration(seconds:2));
-    return Scaffold(
-      body: Center(
+    return Center(
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: AspectRatio(
@@ -116,20 +95,7 @@ class _MyHomePageState extends State<ReadingsMain> {
             ),
           ),
         ),
-      ),
-        bottomNavigationBar: BottomAppBar(
-          child: ElevatedButton(
-            onPressed: () {
-              readingsValues.clear();
-              readingsTimes.clear();
-
-              minY = 0.0;
-              maxY = 100.0;
-              Navigator.pop(context);
-            },
-            child: const Text('Alerts'),
-          ),
-        ));
+      );
 
   }
   getReadings() async {
