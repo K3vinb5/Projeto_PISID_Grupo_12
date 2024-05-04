@@ -1,0 +1,1 @@
+java -cp ".\org.eclipse.paho.client.mqttv3-1.1.0.jar;.\mongo-java-driver-3.12.14.jar;.\bson-4.11.0.jar;.\mongodb-driver-sync-4.0.0.jar;." mainLauncher.FatherMain CloudToMongo.ini cloudToMongo.CloudToMongoWorker

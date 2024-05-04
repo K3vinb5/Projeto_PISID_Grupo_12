@@ -1,0 +1,1 @@
+SELECT COUNT(*) FROM corredor WHERE salaa = '1' AND salab = '2'
