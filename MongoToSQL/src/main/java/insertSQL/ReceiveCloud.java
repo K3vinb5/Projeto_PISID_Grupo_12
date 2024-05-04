@@ -1,34 +1,18 @@
 package insertSQL;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
+import org.eclipse.paho.client.mqttv3.*;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
-
-import org.bson.BsonDocument;
-import org.bson.BsonString;
-import org.bson.BsonValue;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class ReceiveCloud implements MqttCallback {
     MqttClient mqttclient;
@@ -186,8 +170,8 @@ public class ReceiveCloud implements MqttCallback {
                 callWrongValues = false;
                 if (enableSPValidation
                         && (!sqlConection.isSensorValid(spValidate, documentsToSend.getFirst())
-                                || !sqlConection.isDouble(
-                                        (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue()))))
+                        || !sqlConection.isDouble(
+                        (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue()))))
                     callWrongValues = true;
 
                 if (enableAuxBDValidation && !sqlConectionAUX.isDown()
@@ -196,7 +180,7 @@ public class ReceiveCloud implements MqttCallback {
 
                 if (enableSPValidation && !callWrongValues
                         && iqr.checkOutlier(Double
-                                .parseDouble((((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))) {
+                        .parseDouble((((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))) {
                     tipoDado = "Outlier";
                     callWrongValues = true;
                 }

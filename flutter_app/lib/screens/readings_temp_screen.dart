@@ -6,16 +6,18 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
 
-class ReadingsTemp2Screen extends StatefulWidget {
+class ReadingsTempScreen extends StatefulWidget {
 
-  const ReadingsTemp2Screen({Key? key}) : super(key: key);
-
+  const ReadingsTempScreen({Key? key, required this.sensor}) : super(key: key);
+  
+  final int sensor;
+  
   @override
-  _ReadingsTemp2ScreenState createState() => _ReadingsTemp2ScreenState();
+  _ReadingsTempScreenState createState() => _ReadingsTempScreenState();
 
 }
 
-class _ReadingsTemp2ScreenState extends State<ReadingsTemp2Screen> {
+class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
   final List<Color> gradientColors = [
     const Color(0xff23b6e6),
     const Color(0xff02d39a),
@@ -96,7 +98,7 @@ class _ReadingsTemp2ScreenState extends State<ReadingsTemp2Screen> {
     String? ip = prefs.getString('ip');
     String? port = prefs.getString('port');
 
-    String readingsURL = "http://" + ip! + ":" + port! + "/scripts/getTemp2.php";
+    String readingsURL = "http://" + ip! + ":" + port! + "/scripts/getTemp${widget.sensor}.php";
     var response = await http
         .post(Uri.parse(readingsURL), body: {'username': username, 'password': password});
 

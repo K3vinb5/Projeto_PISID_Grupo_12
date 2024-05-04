@@ -56,7 +56,7 @@ final GoRouter _router = GoRouter(
             GoRoute(
               path: '/sensors1',
               builder: (BuildContext context, GoRouterState state) =>
-              const ReadingsTemp1Screen(),
+              const ReadingsTempScreen(sensor: 1),
             ),
           ],
         ),
@@ -66,7 +66,7 @@ final GoRouter _router = GoRouter(
             GoRoute(
               path: '/sensors2',
               builder: (BuildContext context, GoRouterState state) =>
-              const ReadingsTemp2Screen(),
+              const ReadingsTempScreen(sensor: 2),
             ),
           ],
         )
