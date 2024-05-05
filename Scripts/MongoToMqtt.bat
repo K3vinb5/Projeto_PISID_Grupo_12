@@ -1,1 +1,1 @@
-java -cp ".\org.eclipse.paho.client.mqttv3-1.1.0.jar;.\mongo-java-driver-3.12.14.jar;.\bson-4.11.0.jar;.\mongodb-driver-sync-4.0.0.jar;." mainLauncher.FatherMain SendCloud.ini mongoToMqtt.MongoToMqttWorker
+java -cp "./lib/org.eclipse.paho.client.mqttv3-1.1.0.jar;./lib/mongo-java-driver-3.12.14.jar;./lib/bson-4.11.0.jar;./lib/mongodb-driver-sync-4.0.0.jar;." mainLauncher.FatherMain ./conf/SendCloud.ini mongoToMqtt.MongoToMqttWorker

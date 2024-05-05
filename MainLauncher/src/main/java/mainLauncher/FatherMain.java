@@ -103,9 +103,10 @@ public class FatherMain {
         }
 
         relativePath = args[1];
-
-        switch (args[0]) {
-            case "./conf/CloudToMongo.ini":
+        // Better code here: args[0].split("\\\\|/")[2]
+        String fileName = args[0].contains("/") ? args[0].split("/")[2] : args[0].split("\\\\|/")[2];
+        switch (fileName) {
+            case "CloudToMongo.ini":
                 setMqttToMongo(p);
                 manager = new Manager() {
                     @Override
@@ -119,7 +120,7 @@ public class FatherMain {
                 };
                 break;
 
-            case "./conf/SendCloud.ini":
+            case "SendCloud.ini":
                 setMongoToMqtt(p);
                 manager = new Manager() {
                     @Override
@@ -134,7 +135,7 @@ public class FatherMain {
                 };
                 break;
 
-            case "./conf/ReceiveCloud.ini":
+            case "ReceiveCloud.ini":
                 setMqttToMySQL(p);
                 manager = new Manager() {
                     @Override
@@ -258,9 +259,22 @@ public class FatherMain {
     }
 
     public static void runWorker(String[] arguments) {
-            // TODO fix this mess (Kevin ended up doing it, cause Alex sucks "É fodido joca")
+        // TODO fix this mess (Kevin ended up doing it, cause Alex sucks "É fodido
+        // joca")
+        String separator = System.getProperty("os.name") == "Linux" ? ":" : ";";
         try {
-            ProcessBuilder pb = new ProcessBuilder(javaPath, "-cp", ".//lib//org.eclipse.paho.client.mqttv3-1.1.0.jar:.//lib//mongo-java-driver-3.12.14.jar:.//lib//bson-4.11.0.jar:.//lib//mongodb-driver-sync-4.0.0.jar:.//lib//gson-2.10.1.jar:.//lib//mariadb-java-client-3.3.3.jar.//lib//mysql-connector-j-8.3.0.jar:.//lib//slf4j-api-2.0.13.jar:.//lib//mongodb-driver-core-4.0.0.jar:.", relativePath);
+            ProcessBuilder pb = new ProcessBuilder(javaPath, "-cp",
+                    ".//lib//org.eclipse.paho.client.mqttv3-1.1.0.jar" + separator
+                            + ".//lib//mongo-java-driver-3.12.14.jar" + separator + ".//lib//bson-4.11.0.jar"
+                            + separator + ".//lib//mongodb-driver-sync-4.0.0.jar"
+                            + separator
+                            + ".//lib//gson-2.10.1.jar" + separator
+                            + ".//lib//mariadb-java-client-3.3.3.jar" + separator
+                            + ".//lib//mysql-connector-j-8.3.0.jar" + separator
+                            + ".//lib//slf4j-api-2.0.13.jar" + separator
+                            + ".//lib//mongodb-driver-core-4.0.0.jar" + separator
+                            + ".",
+                    relativePath);
             pb.command().addAll(List.of(arguments));
             pb.start();
         } catch (IOException e) {
