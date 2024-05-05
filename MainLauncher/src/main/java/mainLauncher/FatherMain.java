@@ -261,7 +261,7 @@ public class FatherMain {
     public static void runWorker(String[] arguments) {
         // TODO fix this mess (Kevin ended up doing it, cause Alex sucks "É fodido
         // joca")
-        String separator = System.getProperty("os.name") == "Linux" ? ":" : ";";
+        String separator = System.getProperty("os.name").contains("Windows") ? ";" : ":";
         try {
             ProcessBuilder pb = new ProcessBuilder(javaPath, "-cp",
                     ".//lib//org.eclipse.paho.client.mqttv3-1.1.0.jar" + separator
