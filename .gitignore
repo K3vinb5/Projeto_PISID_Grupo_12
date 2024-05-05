@@ -1,21 +1,36 @@
-
+#Ignorar tipos de ficheiros
 *.class
 *.class
 *.class
+*.wt
+*.xml
 
 # Bad text editor
 .vscode/
 
-# Ignorar Coisas no CloudToMongo
+# Ignorar Pastas Problematicas
 CloudToMongo/target/
 CloudToMongo/.idea/
 CloudToMongo/lib/
 
-# Ignorar Coisas no Sensors Emulator
 Sensors Emulator/.idea/
 Sensors Emulator/.venv/
 
-# Ignorar Coisas no MongoToSQL
 MongoToSQL/.idea/
 MongoToSQL/lib/
-*.wt
+MongoToSQL/target/
+
+MainLauncher/.idea/
+MainLauncher/lib/
+MainLauncher/target/
+
+MongoToMqtt/.idea/
+MongoToMqtt/lib/
+MongoToMqtt/target/
+
+#Ignorar coisas do Mongo
+
+replicasPISID/server1/
+replicasPISID/server2/
+replicasPISID/server3/
+
