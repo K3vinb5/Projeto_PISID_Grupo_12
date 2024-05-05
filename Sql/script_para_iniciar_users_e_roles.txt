@@ -44,6 +44,7 @@ GRANT EXECUTE ON PROCEDURE InserirExperiencia TO Investigador;
 GRANT EXECUTE ON PROCEDURE EditarExperiencia TO Investigador;
 GRANT EXECUTE ON PROCEDURE EditarUtilizador TO Investigador;
 GRANT EXECUTE ON PROCEDURE ComecarTerminarExperienca TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterRatosSalasExperiencia TO Investigador;
 
 GRANT EXECUTE ON PROCEDURE InserirUtilizador TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE InserirExperiencia TO AdministradorAplicacao;

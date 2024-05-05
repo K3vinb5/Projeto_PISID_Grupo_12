@@ -499,7 +499,7 @@ END$$
 DROP PROCEDURE IF EXISTS `ObterRatosSalasExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterRatosSalasExperiencia` (IN `idExperiencia` INT)   BEGIN
 
-	SELECT * FROM medicoessala m WHERE m.IDExperiencia = idExperiencia;
+	SELECT * FROM medicoessala m WHERE m.IDExperiencia = idExperiencia ORDER BY m.Sala;
     
 END$$
 
