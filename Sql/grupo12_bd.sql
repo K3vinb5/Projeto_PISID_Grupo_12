@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 05, 2024 at 11:02 PM
+-- Generation Time: May 06, 2024 at 01:14 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -49,23 +49,11 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarUtilizador` (IN `email` VARCH
 END$$
 
 DROP PROCEDURE IF EXISTS `AtribuirExperienciaInvestigador`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `AtribuirExperienciaInvestigador` (IN `idExperiencia` INT, IN `idInvestigador` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AtribuirExperienciaInvestigador` (IN `idExperiencia` INT, IN `emailInvestigador` VARCHAR(200))   BEGIN
 
-	DECLARE countExp, countUti, idExperienciaDecorrer INT;
-
-    SELECT COUNT(*) INTO countExp FROM experiência e WHERE e.IDExperiencia = idExperiencia;
-    SELECT COUNT(*) INTO countUti FROM utilizador u WHERE u.IDUtilizador = idInvestigador;
-	
-    IF countExp>0 AND countUti>0 THEN
-    	CALL ObterExperienciaADecorrer(idExperienciaDecorrer);
-        IF idExperienciaDecorrer != idExperiencia THEN
-        	UPDATE experiência e
-            SET e.Investigador = idInvestigador
-            WHERE e.IDExperiencia = idExperiencia;
-		END IF;
-	END IF;
-    
-    SELECT ROW_COUNT();
+	UPDATE experiencia e
+    SET e.Investigador = IFNULL(emailInvestigador, e.Investigador)
+    WHERE e.IDExperiencia = idExperiencia;
     
 END$$
 
@@ -332,7 +320,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirAlerta` (IN `sala` INT, IN `
     	INSERT INTO alerta (DataHora, Sala, TipoAlerta, Mensagem) 
         VALUES (NOW(), sala, tipoAlerta, mensagem);
     ELSEIF sensor IS NOT NULL AND leitura IS NOT NULL THEN
-    	INSERT INTO alerta (DataHora, Sensor, Leitura, TipoAlerta, Mensagem) 
+    	INSERT INTO alerta (DataHora, IDSensor, Leitura, TipoAlerta, Mensagem) 
         VALUES (NOW(), sensor, leitura, tipoAlerta, mensagem);
 	END IF;
     
@@ -455,9 +443,9 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperiencia` (IN `idExperienci
 END$$
 
 DROP PROCEDURE IF EXISTS `ObterExperienciaADecorrer`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperienciaADecorrer` (OUT `idExperiencia` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterExperienciaADecorrer` (OUT `idExperienciaDecorrer` INT)   BEGIN
 
-    SELECT IDExperiencia INTO idExperiencia FROM v_expadecorrer LIMIT 1;
+    SELECT IDExperiencia INTO idExperienciaDecorrer FROM v_expadecorrer LIMIT 1;
     
 END$$
 
@@ -591,18 +579,20 @@ CREATE TABLE IF NOT EXISTS `experiencia` (
   `Investigador` varchar(200) NOT NULL,
   PRIMARY KEY (`IDExperiencia`),
   KEY `experiência_ibfk_1` (`Investigador`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `experiencia`
 --
 
 INSERT INTO `experiencia` (`IDExperiencia`, `Descrição`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TemperaturaAvisoMaximo`, `TemperaturaAvisoMinimo`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `Investigador`) VALUES
-(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, 10.00, 25.00, 15.00, 11.00, NULL, NULL, 'pedro@iscte.pt'),
+(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, 10.00, 25.00, 15.00, 11.00, '2024-05-06 00:00:57', '2024-05-06 00:13:50', 'pedro@iscte.pt'),
 (25, 'teste', '2024-04-22 17:56:21', 50, 8, 30, 5.00, 20.00, 18.00, 7.00, NULL, NULL, 'pedro@iscte.pt'),
 (26, 'Experiencia editada 123', '2024-04-22 21:47:49', 20, 5, 10, 19.00, 24.00, 24.00, 19.00, NULL, NULL, 'pedro@iscte.pt'),
 (27, 'teste 1', '2024-04-22 22:35:13', 10, 2, 10, 15.00, 25.00, 20.00, 19.00, NULL, NULL, 'fatima@iscte.pt'),
-(28, 'Experiencia com email NULL', '2024-04-22 22:35:55', 10, 2, 10, 15.00, 25.00, 20.00, 19.00, NULL, NULL, 'fatima@iscte.pt');
+(28, 'Experiencia com email NULL', '2024-04-22 22:35:55', 10, 2, 10, 15.00, 25.00, 20.00, 19.00, NULL, NULL, 'fatima@iscte.pt'),
+(37, 'Experiencia de teste', '2024-05-05 22:48:21', 15, 2, 23, 11.00, 22.00, 21.00, 12.00, NULL, NULL, 'pedro@iscte.pt'),
+(38, 'Outra experiencia', '2024-05-05 23:27:22', 33, 3, 33, 13.00, 33.00, 32.00, 14.00, NULL, NULL, 'pedro@iscte.pt');
 
 --
 -- Triggers `experiencia`
@@ -631,7 +621,7 @@ CREATE TRIGGER `ExperienciaInsertAfter` AFTER INSERT ON `experiencia` FOR EACH R
 	CALL IniciarSala(new.IDExperiencia , new.NúmeroRatos, counter);
     SELECT counter + 1 INTO counter;
     
-    WHILE counter < 10 DO
+    WHILE counter <= 10 DO
     	CALL IniciarSala(new.IDExperiencia, 0, counter);
         SELECT counter + 1 INTO counter;
 	END WHILE;
@@ -748,8 +738,8 @@ CREATE TRIGGER `ExperienciaUpdateBefore` BEFORE UPDATE ON `experiencia` FOR EACH
             END IF;
         END IF;
         
-        IF new.DataHoraFimExperiência > old.DataHoraInicioExperiência THEN
-        	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'O data/hora de fim da experiência não podem ser maiores que a data/hora de inicio!';
+        IF new.DataHoraFimExperiência < old.DataHoraInicioExperiência THEN
+        	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A data/hora de fim da experiência não podem ser menores que a data/hora de inicio!';
         END IF;
     
     	IF new.NúmeroRatos <> old.NúmeroRatos THEN
@@ -908,7 +898,7 @@ CREATE TABLE IF NOT EXISTS `medicoessala` (
   `Sala` int(11) NOT NULL,
   PRIMARY KEY (`IDMedição`),
   KEY `ExpSalaFK` (`IDExperiencia`)
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `medicoessala`
@@ -961,23 +951,27 @@ INSERT INTO `medicoessala` (`IDMedição`, `IDExperiencia`, `NúmeroRatosFinal`,
 (45, 28, 0, 6),
 (46, 28, 0, 7),
 (47, 28, 0, 8),
-(48, 28, 0, 9);
-
---
--- Triggers `medicoessala`
---
-DROP TRIGGER IF EXISTS `MedicoesSalaInsertBefore`;
-DELIMITER $$
-CREATE TRIGGER `MedicoesSalaInsertBefore` BEFORE INSERT ON `medicoessala` FOR EACH ROW BEGIN
-
-	DECLARE idExperiencia INT;
-    CALL ObterExperienciaADecorrer(idExperiencia);
-    
-    SET new.IDExperiencia = idExperiencia;
-
-END
-$$
-DELIMITER ;
+(48, 28, 0, 9),
+(88, 37, 15, 1),
+(89, 37, 0, 2),
+(90, 37, 0, 3),
+(91, 37, 0, 4),
+(92, 37, 0, 5),
+(93, 37, 0, 6),
+(94, 37, 0, 7),
+(95, 37, 0, 8),
+(96, 37, 0, 9),
+(97, 37, 0, 10),
+(98, 38, 33, 1),
+(99, 38, 0, 2),
+(100, 38, 0, 3),
+(101, 38, 0, 4),
+(102, 38, 0, 5),
+(103, 38, 0, 6),
+(104, 38, 0, 7),
+(105, 38, 0, 8),
+(106, 38, 0, 9),
+(107, 38, 0, 10);
 
 -- --------------------------------------------------------
 

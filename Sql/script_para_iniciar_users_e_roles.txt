@@ -22,7 +22,7 @@ GRANT SELECT ON grupo12_bd.medicoessala TO AdministradorAplicacao;
 GRANT SELECT ON grupo12_bd.medicoestemperatura TO AdministradorAplicacao;
 GRANT SELECT ON grupo12_bd.parametroadicional TO AdministradorAplicacao;
 GRANT SELECT ON grupo12_bd.utilizador TO AdministradorAplicacao;
-GRANT SELECT ON grupo12_bd.v_utilizador TO Investigador;
+GRANT SELECT ON grupo12_bd.v_utilizador TO AdministradorAplicacao;
 GRANT SELECT ON grupo12_bd.v_expadecorrer TO AdministradorAplicacao;
 
 GRANT SELECT ON grupo12_bd.alerta TO WriteMySql;
@@ -52,6 +52,8 @@ GRANT EXECUTE ON PROCEDURE InserirExperiencia TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE EditarExperiencia TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE ComecarTerminarExperienca TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE ObterRoleUtilizador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterRatosSalasExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE AtribuirExperienciaInvestigador TO AdministradorAplicacao;
 
 GRANT EXECUTE ON PROCEDURE InserirTemperatura TO WriteMySql;
 GRANT EXECUTE ON PROCEDURE InserirMovimento TO WriteMySql;
