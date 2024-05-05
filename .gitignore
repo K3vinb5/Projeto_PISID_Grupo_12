@@ -9,28 +9,29 @@
 .vscode/
 
 # Ignorar Pastas Problematicas
-CloudToMongo/target/
-CloudToMongo/.idea/
-CloudToMongo/lib/
+./CloudToMongo/target/
+./CloudToMongo/.idea/
+./CloudToMongo/lib/
 
-Sensors Emulator/.idea/
-Sensors Emulator/.venv/
+./Sensors Emulator/.idea/
+./Sensors Emulator/.venv/
 
-MongoToSQL/.idea/
-MongoToSQL/lib/
-MongoToSQL/target/
+./MongoToSQL/.idea/
+./MongoToSQL/lib/
+./MongoToSQL/target/
 
-MainLauncher/.idea/
-MainLauncher/lib/
-MainLauncher/target/
+./MainLauncher/.idea/
+./MainLauncher/lib/
+./MainLauncher/target/
 
-MongoToMqtt/.idea/
-MongoToMqtt/lib/
-MongoToMqtt/target/
+./MongoToMqtt/.idea/
+./MongoToMqtt/lib/
+./MongoToMqtt/target/
 
 #Ignorar coisas do Mongo
 
-replicasPISID/server1/
-replicasPISID/server2/
-replicasPISID/server3/
+./replicasPISID/server1/
+./replicasPISID/server2/
+./replicasPISID/server3/
 
+*.wt
