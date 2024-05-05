@@ -18,3 +18,4 @@ Sensors Emulator/.venv/
 # Ignorar Coisas no MongoToSQL
 MongoToSQL/.idea/
 MongoToSQL/lib/
+*.wt

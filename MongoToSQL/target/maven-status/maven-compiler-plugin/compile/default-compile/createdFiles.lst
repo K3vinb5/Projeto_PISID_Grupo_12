@@ -1,0 +1,6 @@
+insertSQL/WriteMysql$Sensor.class
+insertSQL/WriteMysql$1.class
+insertSQL/ReceiveCloud.class
+insertSQL/OutlierDetector.class
+insertSQL/WriteMysql.class
+insertSQL/ReceiveCloud$1.class
