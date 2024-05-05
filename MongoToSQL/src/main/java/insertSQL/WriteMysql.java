@@ -1,33 +1,20 @@
 package insertSQL;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.BsonValue;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Grupo12
@@ -73,7 +60,7 @@ public class WriteMysql {
     private static List<Sensor> validSensors = new ArrayList<>();
 
     public WriteMysql(String sql_table_to, String sql_database_connection_to, String sql_database_user_to,
-            String sql_database_password_to) {
+                      String sql_database_password_to) {
         this.sql_table_to = sql_table_to;
         this.sql_database_connection_to = sql_database_connection_to;
         this.sql_database_user_to = sql_database_user_to;
@@ -211,8 +198,8 @@ public class WriteMysql {
             BsonValue value = document.get(params.get(i - 1));
             if ((!types.get(i - 1).equals("datetime") && value == null)
                     || (value != null && !isDouble(((BsonString) value).getValue())
-                            && !types
-                                    .get(i - 1).equals("datetime")))
+                    && !types
+                    .get(i - 1).equals("datetime")))
                 return false;
 
             stmt.setString(i, value == null ? null : ((BsonString) value).getValue());

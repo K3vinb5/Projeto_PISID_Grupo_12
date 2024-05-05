@@ -103,8 +103,9 @@ public class FatherMain {
         }
 
         relativePath = args[1];
-
-        switch (args[0]) {
+        // Better code here: args[0].split("\\\\|/")[2]
+        String fileName = args[0].contains("/") ? args[0].split("/")[2] : args[0].split("\\\\|/")[2];
+        switch (fileName) {
             case "CloudToMongo.ini":
                 setMqttToMongo(p);
                 manager = new Manager() {
@@ -258,33 +259,24 @@ public class FatherMain {
     }
 
     public static void runWorker(String[] arguments) {
+        // TODO fix this mess (Kevin ended up doing it, cause Alex sucks "É fodido
+        // joca")
+        String separator = System.getProperty("os.name").contains("Windows") ? ";" : ":";
         try {
-            String home = System.getProperty("user.home");
             ProcessBuilder pb = new ProcessBuilder(javaPath, "-cp",
-                    ".;" + home
-                            + "//.m2//repository//org//eclipse//paho//org.eclipse.paho.client.mqttv3//1.1.0//org.eclipse.paho.client.mqttv3-1.1.0.jar;"
-                            + home
-                            + "//.m2//repository//org//mongodb//mongo-java-driver//3.6.3//mongo-java-driver-3.6.3.jar;"
-                            + home + "//.m2//repository//org//mongodb//bson//3.10.1//bson-3.10.1.jar"
-                    // home +
-                    // "\\.m2\\repository\\org\\mariadb\\jdbc\\mariadb-java-client\\3.3.3\\mariadb-java-client-3.3.3.jar"
-                    // + home
-                    // +
-                    // "\\.m2\\repository\\com\\mysql\\mysql-connector-j\\8.3.0\\mysql-connector-j-8.3.0.jar"
-                    // + home +
-                    // "\\.m2\\repository\\com\\google\\code\\gson\\gson\\2.10.1\\gson-2.10.1.jar"
-                    // + home +
-                    // "\\.m2\\repository\\org\\slf4j\\slf4j-api\\2.0.13\\slf4j-api-2.0.13.jar",
-                    , relativePath);
-            // TODO fix this mess
-            // ProcessBuilder pb = new ProcessBuilder(javaPath, "-jar",
-            // "./target/CloudToMongoWorker.jar");
-            pb.directory(new File(System.getProperty("user.dir")));
+                    ".//lib//org.eclipse.paho.client.mqttv3-1.1.0.jar" + separator
+                            + ".//lib//mongo-java-driver-3.12.14.jar" + separator + ".//lib//bson-4.11.0.jar"
+                            + separator + ".//lib//mongodb-driver-sync-4.0.0.jar"
+                            + separator
+                            + ".//lib//gson-2.10.1.jar" + separator
+                            + ".//lib//mariadb-java-client-3.3.3.jar" + separator
+                            + ".//lib//mysql-connector-j-8.3.0.jar" + separator
+                            + ".//lib//slf4j-api-2.0.13.jar" + separator
+                            + ".//lib//mongodb-driver-core-4.0.0.jar" + separator
+                            + ".",
+                    relativePath);
             pb.command().addAll(List.of(arguments));
-
-            Process process = pb.start();
-
-            // processesbBundles.add(new ProcessBundle(process, pb));
+            pb.start();
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
