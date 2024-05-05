@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 06, 2024 at 01:14 AM
+-- Generation Time: May 06, 2024 at 01:37 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -75,20 +75,20 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AtualizarNumRatosSala` (IN `salaOri
 END$$
 
 DROP PROCEDURE IF EXISTS `ComecarTerminarExperienca`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `ComecarTerminarExperienca` (IN `idExperiencia` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ComecarTerminarExperienca` (IN `idExperienciaPretendida` INT)   BEGIN
 
-	DECLARE idExperienciaDecorrer INT;
-    CALL ObterExperienciaADecorrer(idExperienciaDecorrer);
+	DECLARE idExperiencia INT;
+    CALL ObterExperienciaADecorrer(idExperiencia);
     
-    IF idExperienciaDecorrer IS NULL THEN
+    IF idExperiencia IS NULL THEN
     	UPDATE experiencia e
         SET e.DataHoraInicioExperiência = NOW()
-        WHERE e.IDExperiencia = idExperiencia;
+        WHERE e.IDExperiencia = idExperienciaPretendida;
 	ELSE
-    	IF idExperiencia = idExperienciaDecorrer THEN
+    	IF idExperienciaPretendida = idExperiencia THEN
         	UPDATE experiencia e
             SET e.DataHoraFimExperiência = NOW()
-            WHERE e.IDExperiencia = idExperiencia;
+            WHERE e.IDExperiencia = idExperienciaPretendida;
 		END IF;
 	END IF;
     
@@ -586,7 +586,7 @@ CREATE TABLE IF NOT EXISTS `experiencia` (
 --
 
 INSERT INTO `experiencia` (`IDExperiencia`, `Descrição`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TemperaturaAvisoMaximo`, `TemperaturaAvisoMinimo`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `Investigador`) VALUES
-(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, 10.00, 25.00, 15.00, 11.00, '2024-05-06 00:00:57', '2024-05-06 00:13:50', 'pedro@iscte.pt'),
+(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, 10.00, 25.00, 15.00, 11.00, '2024-05-06 00:31:13', '2024-05-06 00:35:52', 'pedro@iscte.pt'),
 (25, 'teste', '2024-04-22 17:56:21', 50, 8, 30, 5.00, 20.00, 18.00, 7.00, NULL, NULL, 'pedro@iscte.pt'),
 (26, 'Experiencia editada 123', '2024-04-22 21:47:49', 20, 5, 10, 19.00, 24.00, 24.00, 19.00, NULL, NULL, 'pedro@iscte.pt'),
 (27, 'teste 1', '2024-04-22 22:35:13', 10, 2, 10, 15.00, 25.00, 20.00, 19.00, NULL, NULL, 'fatima@iscte.pt'),
