@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 05, 2024 at 04:49 PM
+-- Generation Time: May 05, 2024 at 11:02 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -503,6 +503,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterRatosSalasExperiencia` (IN `id
     
 END$$
 
+DROP PROCEDURE IF EXISTS `ObterRoleUtilizador`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterRoleUtilizador` ()   BEGIN
+
+	DECLARE utilizador VARCHAR(200); 
+    SELECT SUBSTRING_INDEX(user(), '@', 2) INTO utilizador;
+	SELECT * FROM mysql.roles_mapping WHERE User = utilizador AND Host = 'localhost';
+    
+END$$
+
 DROP PROCEDURE IF EXISTS `ObterTemperaturasExperiencia`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ObterTemperaturasExperiencia` (IN `idExperiencia` INT)   BEGIN
 
@@ -723,7 +732,7 @@ CREATE TRIGGER `ExperienciaUpdateBefore` BEFORE UPDATE ON `experiencia` FOR EACH
 	DECLARE utilizador VARCHAR(200); 
     SELECT SUBSTRING_INDEX(user(), '@', 2) INTO utilizador;
 	IF NOT new.Investigador = utilizador THEN
-    	IF NOT EXISTS (SELECT * FROM mysql.roles_mapping WHERE User = utilizador AND Host = 'localhost' AND Role = 'AdministradorAplicacao') THEN
+    	IF NOT EXISTS (SELECT * FROM mysql.roles_mapping WHERE User = utilizador AND Host = 'localhost' AND (Role = 'AdministradorAplicacao' OR Role = 'WriteMySql')) THEN
     		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Está a tentar editar uma experiência de outro utilizador!';
 		END IF;
 	END IF;
@@ -908,7 +917,7 @@ CREATE TABLE IF NOT EXISTS `medicoessala` (
 INSERT INTO `medicoessala` (`IDMedição`, `IDExperiencia`, `NúmeroRatosFinal`, `Sala`) VALUES
 (1, 24, 44, 1),
 (2, 24, 0, 2),
-(3, 24, 0, 3),
+(3, 24, 1, 3),
 (4, 24, 0, 4),
 (5, 24, 0, 5),
 (6, 24, 0, 6),

@@ -45,11 +45,13 @@ GRANT EXECUTE ON PROCEDURE EditarExperiencia TO Investigador;
 GRANT EXECUTE ON PROCEDURE EditarUtilizador TO Investigador;
 GRANT EXECUTE ON PROCEDURE ComecarTerminarExperienca TO Investigador;
 GRANT EXECUTE ON PROCEDURE ObterRatosSalasExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterRoleUtilizador TO Investigador;
 
 GRANT EXECUTE ON PROCEDURE InserirUtilizador TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE InserirExperiencia TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE EditarExperiencia TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE ComecarTerminarExperienca TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterRoleUtilizador TO AdministradorAplicacao;
 
 GRANT EXECUTE ON PROCEDURE InserirTemperatura TO WriteMySql;
 GRANT EXECUTE ON PROCEDURE InserirMovimento TO WriteMySql;
