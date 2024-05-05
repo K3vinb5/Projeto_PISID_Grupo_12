@@ -1,0 +1,68 @@
+CREATE ROLE Investigador;
+CREATE ROLE AdministradorAplicacao;
+CREATE ROLE WriteMySql;
+
+
+
+GRANT SELECT ON grupo12_bd.alerta TO Investigador;
+GRANT SELECT ON grupo12_bd.experiencia TO Investigador;
+GRANT SELECT ON grupo12_bd.medicoesnaoconformes TO Investigador;
+GRANT SELECT ON grupo12_bd.medicoespassagem TO Investigador;
+GRANT SELECT ON grupo12_bd.medicoessala TO Investigador;
+GRANT SELECT ON grupo12_bd.medicoestemperatura TO Investigador;
+GRANT SELECT ON grupo12_bd.parametroadicional TO Investigador;
+-- GRANT SELECT ON grupo12_bd.utilizador TO Investigador;
+GRANT SELECT ON grupo12_bd.v_utilizador TO Investigador;
+
+GRANT SELECT ON grupo12_bd.alerta TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.experiencia TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.medicoesnaoconformes TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.medicoespassagem TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.medicoessala TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.medicoestemperatura TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.parametroadicional TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.utilizador TO AdministradorAplicacao;
+
+GRANT SELECT ON grupo12_bd.alerta TO WriteMySql;
+GRANT SELECT ON grupo12_bd.experiencia TO WriteMySql;
+GRANT SELECT ON grupo12_bd.medicoesnaoconformes TO WriteMySql;
+GRANT SELECT ON grupo12_bd.medicoespassagem TO WriteMySql;
+GRANT SELECT ON grupo12_bd.medicoessala TO WriteMySql;
+GRANT SELECT ON grupo12_bd.medicoestemperatura TO WriteMySql;
+GRANT SELECT ON grupo12_bd.parametroadicional TO WriteMySql;
+
+
+
+GRANT UPDATE, INSERT, DELETE ON grupo12_bd.experiencia TO Investigador;
+
+
+
+GRANT EXECUTE ON PROCEDURE InserirExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE EditarExperiencia TO Investigador;
+
+GRANT EXECUTE ON PROCEDURE InserirUtilizador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE InserirExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE EditarExperiencia TO AdministradorAplicacao;
+
+GRANT EXECUTE ON PROCEDURE InserirTemperatura TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE InserirMovimento TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE InserirNaoConformes TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE InserirAlerta TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterExperienciaADecorrer TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterListaSensores TO WriteMySql;
+
+
+CREATE USER 'pedro@iscte.pt'@'localhost' IDENTIFIED BY 'Pass123!';
+CREATE USER 'fatima@iscte.pt'@'localhost' IDENTIFIED BY 'Pass123!';
+CREATE USER 'admin@iscte.pt'@'localhost' IDENTIFIED BY 'Pass123!';
+CREATE USER 'system@iscte.pt'@'localhost' IDENTIFIED BY 'Pass123!';
+
+GRANT AdministradorAplicacao TO 'admin@iscte.pt'@'localhost';
+GRANT Investigador TO 'pedro@iscte.pt'@'localhost';
+GRANT Investigador TO 'fatima@iscte.pt'@'localhost';
+GRANT WriteMySql TO 'system@iscte.pt'@'localhost';
+
+SET DEFAULT ROLE 'Investigador' FOR 'pedro@iscte.pt'@'localhost';
+SET DEFAULT ROLE 'Investigador' FOR 'fatima@iscte.pt'@'localhost';
+SET DEFAULT ROLE 'AdministradorAplicacao' FOR 'admin@iscte.pt'@'localhost';
+SET DEFAULT ROLE 'WriteMySql' FOR 'system@iscte.pt'@'localhost';
