@@ -10,6 +10,27 @@ $type = $_GET['type'];
 $state = isset($_GET['state']) ? $_GET['state'] : '';
 $id = isset($_GET['id']) ? $_GET['id'] : '';
 
+function isAdministrator()
+{
+    $url = "127.0.0.1";
+    $database = "grupo12_bd";
+    $username = $_SESSION['email'];
+    $password = $_SESSION['password'];
+    $conn = mysqli_connect($url, $username, $password, $database);
+
+    $sql = "CALL ObterRoleUtilizador()";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        if ($row['Role'] == "AdministradorAplicacao") {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function table(mysqli $conn, string $sql)
 {
     $result = mysqli_query($conn, $sql);
@@ -104,23 +125,41 @@ function table(mysqli $conn, string $sql)
                     <div class="form-row">
                         <div class="form-group">
                             <label for="desc">Descrição Experiência:</label>
-                            <input <?php if ($investigador != $email) echo 'disabled'; ?> type="text" id="desc" name="desc" style="width: 95%" required value="<?php if ($type != "create") echo "$descricao" ?>">
+                            <input <?php if ($type != "create") {
+                                        if ($investigador != $email && !isAdministrator()) echo 'disabled';
+                                    } ?> type="text" id="desc" name="desc" style="width: 95%" required value="<?php if ($type != "create") echo "$descricao" ?>">
+                        </div>
+                    </div>
+                    <div class="form-row" style="<?php if (!isAdministrator()) {
+                                                        echo "display: none;";
+                                                    } ?>">
+                        <div class="form-group">
+                            <label for="investigador" style="margin-left: 10%">Email do Investigador:</label>
+                            <input type="text" id="investigador" name="investigador" style="width: 80%; margin-left: 10%" value="<?php if ($type != "create") echo "$investigador" ?>">
+                        </div>
+                        <div class="form-group">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="num_rats" style="margin-left: 10%">Número Ratos:</label>
-                            <input <?php if ($investigador != $email) echo 'disabled'; ?> type="number" id="num_rats" name="num_rats" style="width: 80%; margin-left: 10%" required value="<?php if ($type != "create") echo "$numRatos" ?>">
+                            <input <?php if ($type != "create") {
+                                        if ($investigador != $email && !isAdministrator()) echo 'disabled';
+                                    } ?> type="number" id="num_rats" name="num_rats" style="width: 80%; margin-left: 10%" required value="<?php if ($type != "create") echo "$numRatos" ?>">
                         </div>
                         <div class="form-group">
                             <label for="limit_rats">Limite Ratos:</label>
-                            <input <?php if ($investigador != $email) echo 'disabled'; ?> type="number" id="limit_rats" name="limit_rats" style="width: 80%" required value="<?php if ($type != "create") echo "$limiteRatos" ?>">
+                            <input <?php if ($type != "create") {
+                                        if ($investigador != $email && !isAdministrator()) echo 'disabled';
+                                    } ?> type="number" id="limit_rats" name="limit_rats" style="width: 80%" required value="<?php if ($type != "create") echo "$limiteRatos" ?>">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="no_movement_time" style="margin-left: 10%">Segundos sem Movimentos:</label>
-                            <input <?php if ($investigador != $email) echo 'disabled'; ?> type="number" id="no_movement_time" name="no_movement_time" style="width: 80%;margin-left: 10%" required value="<?php if ($type != "create") echo "$noMovement" ?>">
+                            <input <?php if ($type != "create") {
+                                        if ($investigador != $email && !isAdministrator()) echo 'disabled';
+                                    } ?> type="number" id="no_movement_time" name="no_movement_time" style="width: 80%;margin-left: 10%" required value="<?php if ($type != "create") echo "$noMovement" ?>">
                         </div>
                         <div class="form-group">
                         </div>
@@ -128,26 +167,34 @@ function table(mysqli $conn, string $sql)
                     <div class="form-row">
                         <div class="form-group">
                             <label for="min_temp" style="margin-left: 10%">Temperatura Mínima:</label>
-                            <input <?php if ($investigador != $email) echo 'disabled'; ?> type="number" step="0.01" id="min_temp" name="min_temp" style="width: 80%; margin-left: 10%" required value="<?php if ($type != "create") echo "$minTemp" ?>">
+                            <input <?php if ($type != "create") {
+                                        if ($investigador != $email && !isAdministrator()) echo 'disabled';
+                                    } ?> type="number" step="0.01" id="min_temp" name="min_temp" style="width: 80%; margin-left: 10%" required value="<?php if ($type != "create") echo "$minTemp" ?>">
                         </div>
                         <div class="form-group">
                             <label for="min_temp_alert">Temperatura Aviso Mínimo:</label>
-                            <input <?php if ($investigador != $email) echo 'disabled'; ?> type="number" step="0.01" id="min_temp_alert" name="min_temp_alert" style="width: 80%" required value="<?php if ($type != "create") echo "$minTempAlert" ?>">
+                            <input <?php if ($type != "create") {
+                                        if ($investigador != $email && !isAdministrator()) echo 'disabled';
+                                    } ?> type="number" step="0.01" id="min_temp_alert" name="min_temp_alert" style="width: 80%" required value="<?php if ($type != "create") echo "$minTempAlert" ?>">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="max_temp" style="margin-left: 10%">Temperatura Máxima:</label>
-                            <input <?php if ($investigador != $email) echo 'disabled'; ?> type="number" step="0.01" id="max_temp" name="max_temp" style="width: 80%; margin-left: 10%" required value="<?php if ($type != "create") echo "$maxTemp" ?>">
+                            <input <?php if ($type != "create") {
+                                        if ($investigador != $email && !isAdministrator()) echo 'disabled';
+                                    } ?> type="number" step="0.01" id="max_temp" name="max_temp" style="width: 80%; margin-left: 10%" required value="<?php if ($type != "create") echo "$maxTemp" ?>">
                         </div>
                         <div class="form-group">
                             <label for="max_temp_change">Temperatura Aviso Máxima:</label>
-                            <input <?php if ($investigador != $email) echo 'disabled'; ?> type="number" step="0.01" id="max_temp_alert" name="max_temp_alert" style="width: 80%" required value="<?php if ($type != "create") echo "$maxTempAlert" ?>">
+                            <input <?php if ($type != "create") {
+                                        if ($investigador != $email && !isAdministrator()) echo 'disabled';
+                                    } ?> type="number" step="0.01" id="max_temp_alert" name="max_temp_alert" style="width: 80%" required value="<?php if ($type != "create") echo "$maxTempAlert" ?>">
                         </div>
                     </div>
                     <br>
                     <br>
-                    <button type='submit' style="float: right; <?php if ($investigador != $email) {
+                    <button type='submit' style="float: right; <?php if ($investigador != $email && !isAdministrator()) {
                                                                     echo "display: none;";
                                                                 } ?>">
                         <?php if ($type == "create") {
@@ -158,7 +205,7 @@ function table(mysqli $conn, string $sql)
                     </button>
                     <?php
                     if ($type != "create") {
-                        if ($investigador == $email) {
+                        if ($investigador == $email || isAdministrator()) {
                             if ($state == "notStarted") {
                                 //not Started
                                 echo "<button formaction=\"../db/db_startStopExperience.php?id=" . $id . "\" type='submit' style=\"float: right\">Começar Experiência</button>";
@@ -176,7 +223,9 @@ function table(mysqli $conn, string $sql)
             </div>
         </div>
 
-        <div class="form-experience">
+        <div class="form-experience" style="<?php if ($type == "create") {
+                                                echo "display: none;";
+                                            } ?>">
             <div class="form-row">
                 <div class="form-group">
                     <label for="desc">Número de ratos em cada sala:</label>
@@ -186,8 +235,6 @@ function table(mysqli $conn, string $sql)
                     $username = $_SESSION['email'];
                     $password = $_SESSION['password'];
                     $conn = mysqli_connect($url, $username, $password, $database);
-
-                    $email = $_SESSION['email'];
 
                     $sql = "CALL ObterRatosSalasExperiencia('$id')";
                     table($conn, $sql);

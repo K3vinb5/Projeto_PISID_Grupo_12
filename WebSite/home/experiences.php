@@ -25,7 +25,7 @@ function table(mysqli $conn, string $sql, bool $mine)
             if ($row["DataHoraInicioExperiência"] == "" && $row["DataHoraFimExperiência"] == "") {
                 //Experience not started
                 $state = "notStarted";
-            } else if ($row["DataHoraInicioExperiência"] != "" && $row["DataHoraFimExperiência"] = "") {
+            } else if ($row["DataHoraInicioExperiência"] != "" && $row["DataHoraFimExperiência"] == "") {
                 //Experience ongoing
                 $state = "onGoing";
             } else {
