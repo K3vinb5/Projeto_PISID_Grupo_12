@@ -6,7 +6,7 @@ import java.util.Queue;
 
 public class OutlierDetector {
 
-    private static final int OUTLIERDETECTORSIZE = 100;
+    private static final int OUTLIERDETECTORSIZE = 100; //TODO buscar bd campos adicionais
     private ArrayList<Double> orderedValues = new ArrayList<>();
     private Queue<Double> lastValues = new LinkedList<>();
 
