@@ -529,7 +529,7 @@ CREATE TABLE IF NOT EXISTS `alerta` (
   `Sala` int(11) DEFAULT NULL,
   `IDSensor` int(11) DEFAULT NULL,
   `Leitura` decimal(4,2) DEFAULT NULL,
-  `TipoAlerta` enum('Sem movimento','Temperatura','Capacidade da sala') NOT NULL,
+  `TipoAlerta` enum('Sem movimento','Temperatura','Capacidade da sala','Temperatura1','Temperatura2','Temperatura3') NOT NULL,
   `Mensagem` varchar(100) NOT NULL,
   `IDExperiencia` int(11) DEFAULT NULL,
   PRIMARY KEY (`IDAlerta`),
@@ -543,13 +543,26 @@ DROP TRIGGER IF EXISTS `AlertaInsertBefore`;
 DELIMITER $$
 CREATE TRIGGER `AlertaInsertBefore` BEFORE INSERT ON `alerta` FOR EACH ROW BEGIN
 
+	DECLARE lastAlertTime DATETIME;
 	DECLARE idExperiencia INT;
     CALL ObterExperienciaADecorrer(idExperiencia);
     
     SET new.IDExperiencia = idExperiencia;
 
 	IF NOT EXISTS (SELECT * FROM sensor WHERE IDSensor = new.IDSensor AND IsActive = TRUE) THEN
-    	SET new.IDSensor = (SELECT s.IDSensor FROM sensor s WHERE s.Nome = 'Not Defined' AND s.IDTipoSensor = (SELECT * FROM tiposensor t WHERE t.Designacao = 'Not Defined'));
+    	SET new.IDSensor = (SELECT s.IDSensor FROM sensor s, tiposensor t WHERE s.Nome = 'Not Defined' AND s.IDTipoSensor = t.IDTipoSensor);
+    END IF;
+    IF NEW.TipoAlerta IN ('Temperatura','Temperatura1','Temperatura2','Temperatura3') THEN
+        -- Verificar se existe spam
+        SELECT DataHora INTO lastAlertTime
+        FROM alerta
+        WHERE TipoAlerta = NEW.TipoAlerta
+        ORDER BY DataHora DESC
+        LIMIT 1;
+
+        IF TIMESTAMPDIFF(SECOND, lastAlertTime, NEW.DataHora) < 20 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Spam recusado';
+        END IF;
     END IF;
 
 END
