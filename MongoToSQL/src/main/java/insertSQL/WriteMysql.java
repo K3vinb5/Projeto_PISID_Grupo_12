@@ -1,5 +1,25 @@
 package insertSQL;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
+
+import org.bson.BsonDocument;
+import org.bson.BsonString;
+import org.bson.BsonValue;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -21,6 +41,7 @@ import java.util.Map;
  * @version 1.0
  */
 public class WriteMysql {
+
 
     /**
      * Sensor
@@ -316,10 +337,45 @@ public class WriteMysql {
         return rs;
     }
 
+    public boolean alertInsert(BsonDocument bsonDocument, boolean isTemperature  ,String tipoAlerta, String mensagem) throws SQLException {
+        CallableStatement stmt = connTo.prepareCall("{call InserirAlerta(?,?,?,?,?)}");
+        stmt.setString(1, isTemperature ? null : bsonDocument.getString("Sala").getValue());
+        stmt.setString(2, !isTemperature ? null :  bsonDocument.getString("Sensor").getValue());
+        stmt.setString(3, !isTemperature ? null : ((BsonString)bsonDocument.get("Leitura")).getValue());
+        stmt.setString(4, tipoAlerta );
+        stmt.setString(5, mensagem );
+        try{
+            stmt.execute();
+            return true;
+        }catch (SQLException e){
+             System.out.println("Alert recused: spam maker");
+             return false;
+        }finally {
+            stmt.close();
+        }
+
+    }
+
+    public ResultSet getCurrentExp() throws SQLException{
+        PreparedStatement stmt = connTo.prepareStatement("SELECT * FROM v_expadecorrer ");
+        stmt.execute();
+        return stmt.getResultSet();
+    }
+
+    public void closeExp(Integer currentExpId) throws SQLException {
+        CallableStatement stmt = connTo.prepareCall("{call ComecarTerminarExperienca(?)}");
+        stmt.setInt(1,currentExpId);
+        stmt.execute();
+        stmt.close();
+    }
+
+
     private void execute(String SqlInsertCommand) throws SQLException {
         Statement s = connTo.createStatement();
         s.executeUpdate(SqlInsertCommand);
         s.close();
     }
+
+
 
 }
