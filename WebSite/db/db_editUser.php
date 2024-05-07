@@ -33,6 +33,13 @@ $stmt->execute();
 // Close the statement
 $stmt->close();
 
+if (!empty($newEmail) && $newEmail != $username) {
+    $_SESSION['email'] = $newEmail;
+}
+if (!empty($newPassword) && $newPassword != $password) {
+    $_SESSION['password'] = $newPassword;
+}
+
 //redirects to experiences.php
 header("Location: ../home/experiences.php");
 $conn->close();
