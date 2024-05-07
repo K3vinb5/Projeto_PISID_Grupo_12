@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 06, 2024 at 01:37 AM
+-- Generation Time: May 07, 2024 at 03:53 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -545,24 +545,29 @@ CREATE TRIGGER `AlertaInsertBefore` BEFORE INSERT ON `alerta` FOR EACH ROW BEGIN
 
 	DECLARE lastAlertTime DATETIME;
 	DECLARE idExperiencia INT;
-    CALL ObterExperienciaADecorrer(idExperiencia);
+    DECLARE controloSpam INT;
     
+    CALL ObterExperienciaADecorrer(idExperiencia);    
     SET new.IDExperiencia = idExperiencia;
-
-	IF NOT EXISTS (SELECT * FROM sensor WHERE IDSensor = new.IDSensor AND IsActive = TRUE) THEN
-    	SET new.IDSensor = (SELECT s.IDSensor FROM sensor s, tiposensor t WHERE s.Nome = 'Not Defined' AND s.IDTipoSensor = t.IDTipoSensor);
-    END IF;
+    
     IF NEW.TipoAlerta IN ('Temperatura','Temperatura1','Temperatura2','Temperatura3') THEN
-        -- Verificar se existe spam
-        SELECT DataHora INTO lastAlertTime
-        FROM alerta
-        WHERE TipoAlerta = NEW.TipoAlerta
-        ORDER BY DataHora DESC
-        LIMIT 1;
+    	IF NOT EXISTS (SELECT * FROM sensor WHERE IDSensor = new.IDSensor AND IsActive = TRUE) THEN
+    		SET new.IDSensor = (SELECT s.IDSensor FROM sensor s, tiposensor t WHERE s.Nome = 'Not Defined' AND s.IDTipoSensor = t.IDTipoSensor);
+    	END IF;        
+    	SELECT ControloSpamTemperatura INTO controloSpam FROM parametroadicional LIMIT 1;
+    ELSEIF NEW.TipoAlerta IN ('Capacidade da sala') THEN
+    	SELECT ControloSpamMovimentos INTO controloSpam FROM parametroadicional LIMIT 1;
+    END IF;
+	
+	-- Verificar se existe spam
+    SELECT DataHora INTO lastAlertTime
+    FROM alerta
+    WHERE TipoAlerta = NEW.TipoAlerta
+    ORDER BY DataHora DESC
+    LIMIT 1;
 
-        IF TIMESTAMPDIFF(SECOND, lastAlertTime, NEW.DataHora) < 20 THEN
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Spam recusado';
-        END IF;
+    IF TIMESTAMPDIFF(SECOND, lastAlertTime, NEW.DataHora) < controloSpam THEN
+    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Spam recusado';
     END IF;
 
 END
@@ -985,6 +990,27 @@ INSERT INTO `medicoessala` (`IDMedição`, `IDExperiencia`, `NúmeroRatosFinal`,
 (105, 38, 0, 8),
 (106, 38, 0, 9),
 (107, 38, 0, 10);
+
+--
+-- Triggers `medicoessala`
+--
+DROP TRIGGER IF EXISTS `MedicoesSalaUpdateAfter`;
+DELIMITER $$
+CREATE TRIGGER `MedicoesSalaUpdateAfter` AFTER UPDATE ON `medicoessala` FOR EACH ROW BEGIN
+
+	DECLARE limiteRatos INT;
+	SELECT exp.LimiteRatosSala INTO limiteRatos FROM experiencia exp WHERE exp.IDExperiencia = NEW.IDExperiencia LIMIT 1;
+    
+	IF NEW.NúmeroRatosFinal = limiteRatos THEN
+		CAll InserirAlerta(NEW.Sala,NULL,NULL, 'Capacidade da sala', 'Limite de ratos atingido!');
+	ELSEIF NEW.NúmeroRatosFinal > limiteRatos THEN
+		CAll InserirAlerta(NEW.Sala,NULL,NULL, 'Capacidade da sala', 'Limite de ratos ultrapassado!');
+		CAll ComecarTerminarExperienca(NEW.IDExperiencia);    
+	END IF;
+
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
