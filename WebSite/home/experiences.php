@@ -83,7 +83,7 @@ function table(mysqli $conn, string $sql, bool $mine)
 
         $email = $_SESSION['email'];
 
-        $sql = "SELECT * FROM experiencia WHERE Investigador='$email'";
+        $sql = "SELECT * FROM experiencia WHERE Investigador='$email' ORDER BY DataHoraCriaçãoExperiência DESC";
         table($conn, $sql, true);
         ?>
         <br>
@@ -91,7 +91,7 @@ function table(mysqli $conn, string $sql, bool $mine)
     <div id="add-experience">
         <h2 style="margin: 10px">Todas as Experiências</h2><br>
         <?php
-        $sql = "SELECT * FROM experiencia WHERE Investigador!='$email'";
+        $sql = "SELECT * FROM experiencia WHERE Investigador!='$email' ORDER BY DataHoraCriaçãoExperiência DESC";
 
         table($conn, $sql, false);
 
