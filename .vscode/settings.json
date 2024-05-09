@@ -1,0 +1,5 @@
+{
+    "php.suggest.basic": false,
+    "php.debug.executablePath": "C:\\xampp\\php\\php.exe",
+    "php.validate.executablePath": "C:\\xampp\\php\\php.exe"
+}

@@ -9,10 +9,25 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
+
+import org.bson.*;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class ReceiveCloud implements MqttCallback {
     MqttClient mqttclient;
@@ -26,7 +41,7 @@ public class ReceiveCloud implements MqttCallback {
     static WriteMysql sqlConection;
     static WriteMysql sqlConectionAUX;
     static String spName;
-    static List<BsonDocument> documentsToSend = new LinkedList<>();
+    static LinkedList<BsonDocument> documentsToSend = new LinkedList<>();
     static JTextArea documentLabel = new JTextArea("\n");
     static String tipoMedicao = "";
     static String spValidate = "";
@@ -34,6 +49,7 @@ public class ReceiveCloud implements MqttCallback {
     static String sql_database_user_to_aux = "";
     static String sql_database_password_to_aux = "";
     static OutlierDetector iqr;
+    static AlertInserter alertInserter;
 
     private static void createWindow() {
         JFrame frame = new JFrame("Receive Cloud - " + tipoMedicao);
@@ -58,7 +74,7 @@ public class ReceiveCloud implements MqttCallback {
         });
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
 
         if (!loadArgs(args))
             return;
@@ -73,7 +89,8 @@ public class ReceiveCloud implements MqttCallback {
             sqlConectionAUX.connectDatabase_to();
         }
 
-        new ReceiveCloud().connecCloud();
+       new ReceiveCloud().connecCloud();
+
 
         // documentLabel.append(cloud_server + "\n");
         // documentLabel.append(cloud_topic + "\n");
@@ -87,9 +104,11 @@ public class ReceiveCloud implements MqttCallback {
         // documentLabel.append(sql_database_connection_to_aux + "\n");
         // documentLabel.append(sql_database_user_to_aux + "\n");
         // documentLabel.append(sql_database_password_to_aux + "\n");
-
         iqr = new OutlierDetector();
+        alertInserter = new AlertInserter(sqlConection);
         // sqlConection.connectDatabase_to();
+
+
     }
 
     // Factory
@@ -114,7 +133,7 @@ public class ReceiveCloud implements MqttCallback {
         ReceiveCloud.sql_table_to = args[2];
         ReceiveCloud.sql_database_connection_to = args[3];
         ReceiveCloud.sql_database_user_to = args[4];
-        ReceiveCloud.sql_database_password_to = args[5];
+        ReceiveCloud.sql_database_password_to =  args[5];
         ReceiveCloud.spName = args[6];
         ReceiveCloud.tipoMedicao = args[7];
         ReceiveCloud.spValidate = args[8];
@@ -183,6 +202,13 @@ public class ReceiveCloud implements MqttCallback {
                         .parseDouble((((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))) {
                     tipoDado = "Outlier";
                     callWrongValues = true;
+                }
+
+                if (enableSPValidation && !callWrongValues){
+                    ResultSet currentExp = sqlConection.getCurrentExp();
+                    if (currentExp.next()){
+                        alertInserter.addMeasurement(documentsToSend.getFirst(),currentExp);
+                    }
                 }
 
                 if (!callWrongValues && !sqlConection.CallToMySQL(spName, documentsToSend.getFirst()))

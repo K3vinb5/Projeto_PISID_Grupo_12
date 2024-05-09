@@ -1,0 +1,132 @@
+CREATE ROLE Investigador;
+CREATE ROLE AdministradorAplicacao;
+CREATE ROLE WriteMySql;
+
+
+
+GRANT SELECT ON grupo12_bd.alerta TO Investigador;
+GRANT SELECT ON grupo12_bd.experiencia TO Investigador;
+GRANT SELECT ON grupo12_bd.medicoesnaoconformes TO Investigador;
+GRANT SELECT ON grupo12_bd.medicoespassagem TO Investigador;
+GRANT SELECT ON grupo12_bd.medicoessala TO Investigador;
+GRANT SELECT ON grupo12_bd.medicoestemperatura TO Investigador;
+GRANT SELECT ON grupo12_bd.parametroadicional TO Investigador;
+GRANT SELECT ON grupo12_bd.sensor TO Investigador;
+GRANT SELECT ON grupo12_bd.tiposensor TO Investigador;
+GRANT SELECT ON grupo12_bd.v_utilizador TO Investigador;
+GRANT SELECT ON grupo12_bd.v_expadecorrer TO Investigador;
+
+GRANT SELECT ON grupo12_bd.alerta TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.experiencia TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.medicoesnaoconformes TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.medicoespassagem TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.medicoessala TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.medicoestemperatura TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.parametroadicional TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.utilizador TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.sensor TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.tiposensor TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.v_utilizador TO AdministradorAplicacao;
+GRANT SELECT ON grupo12_bd.v_expadecorrer TO AdministradorAplicacao;
+
+GRANT SELECT ON grupo12_bd.alerta TO WriteMySql;
+GRANT SELECT ON grupo12_bd.experiencia TO WriteMySql;
+GRANT SELECT ON grupo12_bd.medicoesnaoconformes TO WriteMySql;
+GRANT SELECT ON grupo12_bd.medicoespassagem TO WriteMySql;
+GRANT SELECT ON grupo12_bd.medicoessala TO WriteMySql;
+GRANT SELECT ON grupo12_bd.medicoestemperatura TO WriteMySql;
+GRANT SELECT ON grupo12_bd.parametroadicional TO WriteMySql;
+GRANT SELECT ON grupo12_bd.sensor TO WriteMySql;
+GRANT SELECT ON grupo12_bd.tiposensor TO WriteMySql;
+GRANT SELECT ON grupo12_bd.v_expadecorrer TO WriteMySql;
+
+
+
+GRANT UPDATE, INSERT, DELETE ON grupo12_bd.experiencia TO Investigador;
+
+GRANT UPDATE, INSERT, DELETE ON grupo12_bd.experiencia TO AdministradorAplicacao;
+GRANT UPDATE ON grupo12_bd.parametroadicional TO AdministradorAplicacao;
+GRANT UPDATE, INSERT ON grupo12_bd.alerta TO AdministradorAplicacao;
+GRANT UPDATE, INSERT ON grupo12_bd.sensor TO AdministradorAplicacao;
+GRANT UPDATE, INSERT ON grupo12_bd.tiposensor TO AdministradorAplicacao;
+
+GRANT INSERT ON grupo12_bd.medicoesnaoconformes TO WriteMySql;
+GRANT INSERT ON grupo12_bd.medicoespassagem TO WriteMySql;
+GRANT UPDATE, INSERT ON grupo12_bd.medicoessala TO WriteMySql;
+GRANT INSERT ON grupo12_bd.medicoestemperatura TO WriteMySql;
+GRANT UPDATE ON grupo12_bd.experiencia TO WriteMySql;
+
+
+
+GRANT EXECUTE ON PROCEDURE ApagarExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE ComecarTerminarExperienca TO Investigador;
+GRANT EXECUTE ON PROCEDURE EditarExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE EditarUtilizador TO Investigador;
+GRANT EXECUTE ON PROCEDURE InserirExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterExperienciaADecorrer TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterExperienciasInvestigador TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterListaExperiencias TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterListaSensores TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterPassagensExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterRatosSalasExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterRoleUtilizador TO Investigador;
+GRANT EXECUTE ON PROCEDURE ObterTemperaturasExperiencia TO Investigador;
+
+GRANT EXECUTE ON PROCEDURE ApagarExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ApagarUtilizador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE AtribuirExperienciaInvestigador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ComecarTerminarExperienca TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE DesativarSensor TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE EditarExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE EditarParametrosAdicionais TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE EditarSensor TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE EditarTipoSensor TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE EditarUtilizador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE InserirAlerta TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE InserirExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE InserirSensor TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE InserirTipoSensor TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE InserirUtilizador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterExperienciaADecorrer TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterExperienciasInvestigador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterInfoUtilizador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterListaExperiencias TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterListaSensores TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterPassagensExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterRatosSalasExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterRoleUtilizador TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterTemperaturasExperiencia TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE ObterUtilizadores TO AdministradorAplicacao;
+
+GRANT EXECUTE ON PROCEDURE ComecarTerminarExperienca TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE InserirAlerta TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE InserirMovimento TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE InserirNaoConformes TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE InserirTemperatura TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterExperiencia TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterExperienciaADecorrer TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterExperienciasInvestigador TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterListaExperiencias TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterListaSensores TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterPassagensExperiencia TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterRatosSalasExperiencia TO WriteMySql;
+GRANT EXECUTE ON PROCEDURE ObterTemperaturasExperiencia TO WriteMySql;
+
+
+
+CREATE USER 'pedro@iscte.pt'@'localhost' IDENTIFIED BY 'Pass123!';
+CREATE USER 'fatima@iscte.pt'@'localhost' IDENTIFIED BY 'Pass123!';
+CREATE USER 'admin@iscte.pt'@'localhost' IDENTIFIED BY 'Pass123!';
+CREATE USER 'system@iscte.pt'@'localhost' IDENTIFIED BY 'Pass123!';
+
+GRANT AdministradorAplicacao TO 'admin@iscte.pt'@'localhost';
+GRANT Investigador TO 'pedro@iscte.pt'@'localhost';
+GRANT Investigador TO 'fatima@iscte.pt'@'localhost';
+GRANT WriteMySql TO 'system@iscte.pt'@'localhost';
+
+SET DEFAULT ROLE 'Investigador' FOR 'pedro@iscte.pt'@'localhost';
+SET DEFAULT ROLE 'Investigador' FOR 'fatima@iscte.pt'@'localhost';
+SET DEFAULT ROLE 'AdministradorAplicacao' FOR 'admin@iscte.pt'@'localhost';
+SET DEFAULT ROLE 'WriteMySql' FOR 'system@iscte.pt'@'localhost';
