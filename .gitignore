@@ -28,6 +28,8 @@
 ./MongoToMqtt/lib/
 ./MongoToMqtt/target/
 
+.venv
+
 #Ignorar coisas do Mongo
 
 ./replicasPISID/server1/
