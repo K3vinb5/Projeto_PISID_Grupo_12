@@ -34,7 +34,7 @@ def on_disconnectMqttRoom(client, userdata, rc):
         print("Unexpected MQTT disconnection. Will auto-reconnect")
     clientMqttRoom.on_connect = on_connectMqttRoom
     clientMqttRoom.on_disconnect = on_disconnectMqttRoom
-    clientMqttRoom.connect("broker.mqttdashboard.com", 1883)
+    clientMqttRoom.connect("broker.mqtt-dashboard.com", 1883)
 
 
 def on_connectMqttRoom(client, userdata, flags, rc):
