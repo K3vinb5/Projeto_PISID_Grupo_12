@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 07, 2024 at 03:53 PM
+-- Generation Time: May 10, 2024 at 11:50 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -366,6 +366,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirNaoConformes` (IN `registoRe
     
     SELECT ROW_COUNT();
 
+END$$
+
+DROP PROCEDURE IF EXISTS `InserirSensor`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirSensor` (IN `nome` VARCHAR(50), IN `idTipoSensor` INT)   BEGIN
+
+	INSERT INTO sensor (None, IDTipoSensor)
+    VALUES (nome, idTipoSensor);
+    
 END$$
 
 DROP PROCEDURE IF EXISTS `InserirTemperatura`$$
