@@ -64,13 +64,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AtualizarNumRatosSala` (IN `salaOri
     SELECT m.NúmeroRatosFinal INTO valorOrigem FROM medicoessala m WHERE m.IDExperiencia = idExperiencia AND m.Sala = salaOrigem LIMIT 1;
     SELECT m.NúmeroRatosFinal INTO valorDestino FROM medicoessala m WHERE m.IDExperiencia = idExperiencia AND m.Sala = salaDestino LIMIT 1;
     
-	UPDATE medicoessala
-    SET NúmeroRatosFinal = (valorOrigem - 1)
-    WHERE Sala = salaOrigem AND IDExperiencia = idExperiencia;
-    
-    UPDATE medicoessala
-    SET NúmeroRatosFinal = (valorDestino + 1)
-    WHERE Sala = salaDestino AND IDExperiencia = idExperiencia;
+	IF valorOrigem > 0 THEN
+		UPDATE medicoessala
+		SET NúmeroRatosFinal = (valorOrigem - 1)
+		WHERE Sala = salaOrigem AND IDExperiencia = idExperiencia;
+		
+		UPDATE medicoessala
+		SET NúmeroRatosFinal = (valorDestino + 1)
+		WHERE Sala = salaDestino AND IDExperiencia = idExperiencia;
+	END IF;
 
 END$$
 
