@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 10, 2024 at 11:50 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Generation Time: May 13, 2024 at 08:10 PM
+-- Server version: 10.4.27-MariaDB
+-- PHP Version: 8.1.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -32,8 +32,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarExperiencia` (IN `idExperienc
 
 	DELETE FROM experiencia
 	WHERE IDExperiencia = idExperiencia;
-    
-    SELECT ROW_COUNT();
 
 END$$
 
@@ -43,8 +41,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ApagarUtilizador` (IN `email` VARCH
 	UPDATE utilizador u
     SET u.RemocaoLogica = TRUE
     WHERE u.EmailUtilizador = email;
-    
-    SELECT ROW_COUNT();
     
 END$$
 
@@ -302,8 +298,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarUtilizador` (IN `emailUtiliza
             DEALLOCATE PREPARE stmt;
         END IF;
     END IF;
-    
-    SELECT ROW_COUNT();
 
 END$$
 
@@ -325,8 +319,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirAlerta` (IN `sala` INT, IN `
     	INSERT INTO alerta (DataHora, IDSensor, Leitura, TipoAlerta, Mensagem) 
         VALUES (NOW(), sensor, leitura, tipoAlerta, mensagem);
 	END IF;
-    
-    SELECT ROW_COUNT();
 
 END$$
 
@@ -356,8 +348,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirMovimento` (IN `Hora` DATETI
     INSERT INTO medicoespassagem (DataHora, SalaOrigem, SalaDestino)
     VALUES (Hora, SalaOrigem, SalaDestino);
 
-    SELECT ROW_COUNT();
-
 END$$
 
 DROP PROCEDURE IF EXISTS `InserirNaoConformes`$$
@@ -365,8 +355,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirNaoConformes` (IN `registoRe
 
 	INSERT INTO medicoesnaoconformes (RegistoRecebido, TipoMedicao, TipoDado)
     VALUES (registoRecebido, TipoMedicao, tipoDado);
-    
-    SELECT ROW_COUNT();
 
 END$$
 
@@ -383,8 +371,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirTemperatura` (IN `Hora` DATE
 
     INSERT INTO medicoestemperatura (DataHora, Leitura, Sensor)
     VALUES (Hora, Leitura, Sensor);
-
-    SELECT ROW_COUNT();
 
 END$$
 
@@ -441,8 +427,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InserirUtilizador` (IN `emailUtiliz
     INSERT INTO utilizador (Nome, Telefone, Email)
     VALUES (nomeUtilizador, telefoneUtilizador, emailUtilizador);
     
-    SELECT ROW_COUNT();
-
 END$$
 
 DROP PROCEDURE IF EXISTS `ObterExperiencia`$$
@@ -614,13 +598,13 @@ CREATE TABLE IF NOT EXISTS `experiencia` (
 --
 
 INSERT INTO `experiencia` (`IDExperiencia`, `Descrição`, `DataHoraCriaçãoExperiência`, `NúmeroRatos`, `LimiteRatosSala`, `SegundosSemMovimento`, `TemperaturaMinima`, `TemperaturaMaxima`, `TemperaturaAvisoMaximo`, `TemperaturaAvisoMinimo`, `DataHoraInicioExperiência`, `DataHoraFimExperiência`, `Investigador`) VALUES
-(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, 10.00, 25.00, 15.00, 11.00, '2024-05-06 00:31:13', '2024-05-06 00:35:52', 'pedro@iscte.pt'),
-(25, 'teste', '2024-04-22 17:56:21', 50, 8, 30, 5.00, 20.00, 18.00, 7.00, NULL, NULL, 'pedro@iscte.pt'),
-(26, 'Experiencia editada 123', '2024-04-22 21:47:49', 20, 5, 10, 19.00, 24.00, 24.00, 19.00, NULL, NULL, 'pedro@iscte.pt'),
-(27, 'teste 1', '2024-04-22 22:35:13', 10, 2, 10, 15.00, 25.00, 20.00, 19.00, NULL, NULL, 'fatima@iscte.pt'),
-(28, 'Experiencia com email NULL', '2024-04-22 22:35:55', 10, 2, 10, 15.00, 25.00, 20.00, 19.00, NULL, NULL, 'fatima@iscte.pt'),
-(37, 'Experiencia de teste', '2024-05-05 22:48:21', 15, 2, 23, 11.00, 22.00, 21.00, 12.00, NULL, NULL, 'pedro@iscte.pt'),
-(38, 'Outra experiencia', '2024-05-05 23:27:22', 33, 3, 33, 13.00, 33.00, 32.00, 14.00, NULL, NULL, 'pedro@iscte.pt');
+(24, 'Nova desc', '2024-04-22 17:53:48', 44, 15, 45, '10.00', '25.00', '15.00', '11.00', '2024-05-06 00:31:13', '2024-05-06 00:35:52', 'pedro@iscte.pt'),
+(25, 'teste', '2024-04-22 17:56:21', 50, 8, 30, '5.00', '20.00', '18.00', '7.00', NULL, NULL, 'pedro@iscte.pt'),
+(26, 'Experiencia editada 123', '2024-04-22 21:47:49', 20, 5, 10, '19.00', '24.00', '24.00', '19.00', NULL, NULL, 'pedro@iscte.pt'),
+(27, 'teste 1', '2024-04-22 22:35:13', 10, 2, 10, '15.00', '25.00', '20.00', '19.00', NULL, NULL, 'fatima@iscte.pt'),
+(28, 'Experiencia com email NULL', '2024-04-22 22:35:55', 10, 2, 10, '15.00', '25.00', '20.00', '19.00', NULL, NULL, 'fatima@iscte.pt'),
+(37, 'Experiencia de teste', '2024-05-05 22:48:21', 15, 2, 23, '11.00', '22.00', '21.00', '12.00', NULL, NULL, 'pedro@iscte.pt'),
+(38, 'Outra experiencia', '2024-05-05 23:27:22', 33, 3, 33, '13.00', '33.00', '32.00', '14.00', NULL, NULL, 'pedro@iscte.pt');
 
 --
 -- Triggers `experiencia`
@@ -1263,7 +1247,7 @@ CREATE TABLE IF NOT EXISTS `v_utilizador` (
 DROP TABLE IF EXISTS `v_expadecorrer`;
 
 DROP VIEW IF EXISTS `v_expadecorrer`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiencia` AS `IDExperiencia`, `e`.`Descrição` AS `Descrição`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`TemperaturaAvisoMaximo` AS `TemperaturaAvisoMaximo`, `e`.`TemperaturaAvisoMinimo` AS `TemperaturaAvisoMinimo`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `e`.`Investigador` AS `Investigador` FROM `experiencia` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is null ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_expadecorrer`  AS SELECT `e`.`IDExperiencia` AS `IDExperiencia`, `e`.`Descrição` AS `Descrição`, `e`.`DataHoraCriaçãoExperiência` AS `DataHoraCriaçãoExperiência`, `e`.`NúmeroRatos` AS `NúmeroRatos`, `e`.`LimiteRatosSala` AS `LimiteRatosSala`, `e`.`SegundosSemMovimento` AS `SegundosSemMovimento`, `e`.`TemperaturaMinima` AS `TemperaturaMinima`, `e`.`TemperaturaMaxima` AS `TemperaturaMaxima`, `e`.`TemperaturaAvisoMaximo` AS `TemperaturaAvisoMaximo`, `e`.`TemperaturaAvisoMinimo` AS `TemperaturaAvisoMinimo`, `e`.`DataHoraInicioExperiência` AS `DataHoraInicioExperiência`, `e`.`DataHoraFimExperiência` AS `DataHoraFimExperiência`, `e`.`Investigador` AS `Investigador` FROM `experiencia` AS `e` WHERE `e`.`DataHoraInicioExperiência` is not null AND `e`.`DataHoraFimExperiência` is null  ;
 
 -- --------------------------------------------------------
 
@@ -1273,7 +1257,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 DROP TABLE IF EXISTS `v_utilizador`;
 
 DROP VIEW IF EXISTS `v_utilizador`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_utilizador`  AS SELECT `u`.`Email` AS `Email`, `u`.`Nome` AS `Nome`, `u`.`Telefone` AS `Telefone`, `u`.`RemocaoLogica` AS `RemocaoLogica` FROM `utilizador` AS `u` WHERE `u`.`Email` = substring_index(user(),'@',2) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_utilizador`  AS SELECT `u`.`Email` AS `Email`, `u`.`Nome` AS `Nome`, `u`.`Telefone` AS `Telefone`, `u`.`RemocaoLogica` AS `RemocaoLogica` FROM `utilizador` AS `u` WHERE `u`.`Email` = substring_index(user(),'@',2)  ;
 
 --
 -- Constraints for dumped tables
