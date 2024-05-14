@@ -74,7 +74,7 @@ public class ReceiveCloud implements MqttCallback {
         });
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
 
         if (!loadArgs(args))
             return;
@@ -89,7 +89,8 @@ public class ReceiveCloud implements MqttCallback {
             sqlConectionAUX.connectDatabase_to();
         }
 
-        new ReceiveCloud().connecCloud();
+       new ReceiveCloud().connecCloud();
+
 
         // documentLabel.append(cloud_server + "\n");
         // documentLabel.append(cloud_topic + "\n");
@@ -106,6 +107,7 @@ public class ReceiveCloud implements MqttCallback {
         iqr = new OutlierDetector();
         alertInserter = new AlertInserter(sqlConection);
         // sqlConection.connectDatabase_to();
+
 
     }
 
@@ -131,7 +133,7 @@ public class ReceiveCloud implements MqttCallback {
         ReceiveCloud.sql_table_to = args[2];
         ReceiveCloud.sql_database_connection_to = args[3];
         ReceiveCloud.sql_database_user_to = args[4];
-        ReceiveCloud.sql_database_password_to = args[5];
+        ReceiveCloud.sql_database_password_to =  args[5];
         ReceiveCloud.spName = args[6];
         ReceiveCloud.tipoMedicao = args[7];
         ReceiveCloud.spValidate = args[8];
@@ -157,6 +159,7 @@ public class ReceiveCloud implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage c) {
+        long s = System.currentTimeMillis();
         sqlConection.connectDatabase_to();
         // if (sqlConection.isDown())
         // sqlConection.connectDatabase_to();
@@ -167,22 +170,13 @@ public class ReceiveCloud implements MqttCallback {
         if (sqlConection.isDown())
             return;
 
-        if (document.get("Solucao") != null) {
-            // try {
-            System.out.println("------ Solucao: " + document + " ------");
-            // sqlConection.closeExp(41);
-            // } catch (SQLException e) {
-            // e.printStackTrace();
-            // }
-        }
-
         try {
             sendMessages(!spValidate.equals("false"), !sql_database_connection_to_aux.equals("false"));
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             sqlConection.close();
-            // System.out.println(Math.random());
+            System.err.println("Connect: " + (System.currentTimeMillis() - s));
         }
     }
 
@@ -195,8 +189,8 @@ public class ReceiveCloud implements MqttCallback {
                 callWrongValues = false;
                 if (enableSPValidation
                         && (!sqlConection.isSensorValid(spValidate, documentsToSend.getFirst())
-                                || !sqlConection.isDouble(
-                                        (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue()))))
+                        || !sqlConection.isDouble(
+                        (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue()))))
                     callWrongValues = true;
 
                 if (enableAuxBDValidation && !sqlConectionAUX.isDown()
@@ -205,15 +199,15 @@ public class ReceiveCloud implements MqttCallback {
 
                 if (enableSPValidation && !callWrongValues
                         && iqr.checkOutlier(Double
-                                .parseDouble((((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))) {
+                        .parseDouble((((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))) {
                     tipoDado = "Outlier";
                     callWrongValues = true;
                 }
 
-                if (enableSPValidation && !callWrongValues) {
+                if (enableSPValidation && !callWrongValues){
                     ResultSet currentExp = sqlConection.getCurrentExp();
-                    if (currentExp.next()) {
-                        alertInserter.addMeasurement(documentsToSend.getFirst(), currentExp);
+                    if (currentExp.next()){
+                        alertInserter.addMeasurement(documentsToSend.getFirst(),currentExp);
                     }
                 }
 

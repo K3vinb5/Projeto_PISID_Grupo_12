@@ -26,11 +26,10 @@ if (!isset($_SESSION['email'])) {
 
     <nav>
         <div class="main-nav-container">
+            <a href="home.php">Home</a>
             <a href="../home/experiences.php">Experiencias</a>
-            <a href="../home/experience_insert_edit.php?type=create">Adicionar Experiencia</a>
         </div>
         <div class="logout-container">
-            <a href="../login/edit_user.php">Editar Utilizador</a>
             <a href="../login/index.php">Log Out</a>
         </div>
     </nav>
