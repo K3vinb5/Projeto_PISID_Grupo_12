@@ -72,6 +72,7 @@ GRANT EXECUTE ON PROCEDURE ObterPassagensExperiencia TO Investigador;
 GRANT EXECUTE ON PROCEDURE ObterRatosSalasExperiencia TO Investigador;
 GRANT EXECUTE ON PROCEDURE ObterRoleUtilizador TO Investigador;
 GRANT EXECUTE ON PROCEDURE ObterTemperaturasExperiencia TO Investigador;
+GRANT EXECUTE ON PROCEDURE EditarExperienciaUserFriendly TO Investigador;
 
 GRANT EXECUTE ON PROCEDURE ApagarExperiencia TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE ApagarUtilizador TO AdministradorAplicacao;
@@ -99,6 +100,7 @@ GRANT EXECUTE ON PROCEDURE ObterRatosSalasExperiencia TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE ObterRoleUtilizador TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE ObterTemperaturasExperiencia TO AdministradorAplicacao;
 GRANT EXECUTE ON PROCEDURE ObterUtilizadores TO AdministradorAplicacao;
+GRANT EXECUTE ON PROCEDURE EditarExperienciaUserFriendly TO AdministradorAplicacao;
 
 GRANT EXECUTE ON PROCEDURE ComecarTerminarExperienca TO WriteMySql;
 GRANT EXECUTE ON PROCEDURE InserirAlerta TO WriteMySql;
