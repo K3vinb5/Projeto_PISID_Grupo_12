@@ -12,27 +12,25 @@ class AlertsScreen extends StatefulWidget {
 }
 
 class _AlertsScreenState extends State<AlertsScreen> {
-  late Timer timer;
   DateTime selectedDate = DateTime.now();
   var mostRecentAlertKey = 0;
-
+  late Timer timer;
   List<String> tableFields = [
-    'Mensagem',
-    'Leitura',
+    'Hora',
     'Sala',
+    'Leitura',
     'Sensor',
     'TipoAlerta',
-    'Hora',
-    'HoraEscrita'
+    'Mensagem',
   ];
   Map<int, List<String>> tableAlerts = {};
+
+  DateTime initTime = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    const oneSec = Duration(seconds: 1);
-    //timer = Timer.periodic(oneSec, (Timer t) => getAlerts());
-    //TODO fix screen (depends on previous script)
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) => getAlerts());
   }
 
   @override
@@ -40,8 +38,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
-        children: <Widget>[
-          Row(
+        children: [
+          /*Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("${selectedDate.day}/${selectedDate.month}/${selectedDate.year}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),),
@@ -53,7 +51,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 },
               ),
             ],
-          ),
+          ),*/
           SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: DataTable(
@@ -82,6 +80,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 
   getAlerts() async {
+    print("a");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     //Gets user info back from the login form
     String? username = prefs.getString('username');
@@ -94,27 +93,26 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
     String alertsURL = "http://" + ip! + ":" + port! + "/db/db_getAlerts.php";
 
-    var response = await http.post(Uri.parse(alertsURL),
-        body: {'username': username, 'password': password});
+    DateTime currentTime = DateTime.now();
+    int secondsAgo = currentTime.difference(initTime).inSeconds;
+
+    var response = await http.post(Uri.parse(alertsURL), body: {'username': username, 'password': password, 'time': secondsAgo.toString()});
 
     if (response.statusCode == 200) {
       var jsonData = json.decode(response.body);
 
-      var alerts = jsonData["alerts"];
-      if (alerts != null && alerts.length > 0) {
+      List<dynamic>? alerts = jsonData["alerts"];
+
+      if (alerts != null && alerts.isNotEmpty) {
         setState(() {
           tableAlerts.clear();
           for (var i = 0; i < alerts.length; i++) {
             Map<String, dynamic> alert = alerts[i];
-            int timeKey = int.parse(
-                alert["Hora"].toString().split(" ")[1].replaceAll(":", ""));
-            var alertValues = <String>[];
+            int timeKey = int.parse(alert["Hora"].toString().split(" ")[1].replaceAll(":", ""));
+
+            List<String> alertValues = [];
             for (var key in alert.keys) {
-              if (alert[key] == null) {
-                alertValues.add("");
-              } else {
-                alertValues.add(alert[key]);
-              }
+              alertValues.add(alert[key] ?? "");
             }
             tableAlerts[timeKey] = alertValues;
           }
