@@ -62,8 +62,8 @@ function table(mysqli $conn, string $sql)
 <body>
     <nav>
         <div class="main-nav-container">
-            <a href="experiences.php">Experiencias</a>
-            <a href="experience_insert_edit.php?type=create">Adicionar Experiencia</a>
+            <a href="../home/experiences.php">Experiencias</a>
+            <a href="../home/experience_insert_edit.php?type=create">Adicionar Experiencia</a>
         </div>
         <div class="logout-container">
             <a href="../login/edit_user.php">Editar Utilizador</a>
