@@ -98,9 +98,10 @@ class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
     String? ip = prefs.getString('ip');
     String? port = prefs.getString('port');
 
-    String readingsURL = "http://" + ip! + ":" + port! + "/scripts/getTemp${widget.sensor}.php";
-    var response = await http
-        .post(Uri.parse(readingsURL), body: {'username': username, 'password': password});
+    String readingsURL = "http://" + ip! + ":" + port! + "/db/db_getTemp${widget.sensor}.php";
+    var response = await http.post(Uri.parse(readingsURL), body: {'username': username, 'password': password, 'time': 3.toString()});
+
+    print(response.body);
 
     if (response.statusCode == 200) {
       var jsonData = json.decode(response.body);
@@ -111,20 +112,19 @@ class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
         minY = 10.0;
         maxY = 30.0;
         if (data != null && data.length > 0) {
+
           for (var reading in data) {
-            DateTime readingTime = DateTime.parse(reading["Hora"].toString());
+
+            DateTime readingTime = DateTime.parse(reading["DataHora"].toString());
             DateTime currentTime = DateTime.now();
             double timeDiff = double.parse((currentTime.difference(readingTime).inSeconds/60).toStringAsFixed(2));
-            print("CURRENT: " + currentTime.toString());
-            print("READING: " + readingTime.toString());
-            print("DIFF: " + timeDiff.toString());
-            if (timeDiff>0.0 && timeDiff<timeLimit && !readingsTimes.contains(timeDiff)) {
-              var value = double.parse(reading["Leitura"].toString());
-              print("VALUE: " + value.toString());
-              readingsTimes.add(timeDiff);
-              readingsValues.add(value);
-            }
+
+            var value = double.parse(reading["Leitura"].toString());
+            readingsTimes.add(timeDiff);
+            readingsValues.add(value);
+
           }
+
           if (readingsValues.isNotEmpty) {
             minY = readingsValues.reduce(min)-1;
             maxY = readingsValues.reduce(max)+1;
@@ -132,7 +132,7 @@ class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
         }
       });
     }
-    print(" ");
+    readingsTimes.reversed.toList();
   }
 
   listReadings() {

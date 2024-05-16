@@ -24,10 +24,10 @@ $counter = 0;
 while ($row = $result->fetch_assoc()) {
     $counter++;
     if ($counter == $row_count) {
-        $readings .= json_encode($row)."]";
+        $readings .= json_encode($row);
     }else{
         $readings .= json_encode($row).",";
     }
 }
 
-echo "{\"readings\": ".$readings."}";
+echo "{\"readings\": ".$readings."]}";

@@ -8,8 +8,11 @@ $database = "grupo12_bd";
 $username = $_POST['username'];
 $password = $_POST['password'];
 $time = $_POST['time'];
-
-
+//
+// $username = "root";
+// $password = "";
+// $time = 1000;
+//
 $conn = mysqli_connect($url, $username, $password, $database);
 
 $sql = "SELECT  mt.DataHora, mt.Leitura FROM medicoestemperatura mt, sensor s, tiposensor ts WHERE mt.Sensor = s.IDSensor AND s.IDTipoSensor = ts.IDTipoSensor AND s.Nome = '1' AND ts.Designacao = 'Temperatura' AND mt.DataHora >= NOW() - INTERVAL $time MINUTE;;";
