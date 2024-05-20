@@ -19,8 +19,8 @@ class ReadingsTempScreen extends StatefulWidget {
 
 class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
   final List<Color> gradientColors = [
-    const Color(0xff23b6e6),
-    const Color(0xff02d39a),
+    Colors.blue,
+    Colors.red,
   ];
 
   late Timer timer;
@@ -41,7 +41,7 @@ class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
   Widget build(BuildContext context) {
     return Center(
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal:10, vertical: 40),
             child: LineChart(
               LineChartData(
                 minX: 0,
@@ -51,7 +51,7 @@ class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
                 titlesData: FlTitlesData(
                   show: true,
                   bottomTitles: SideTitles(
-                    showTitles: true,
+                    showTitles: false,
                     margin: 5,
                   ),
                   leftTitles: SideTitles(
@@ -82,7 +82,7 @@ class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
                       colors: gradientColors
                           .map((color) => color.withOpacity(0.2))
                           .toList(),
-                    ),
+                   ),
                   ),
                 ],
               ),
@@ -132,7 +132,7 @@ class _ReadingsTempScreenState extends State<ReadingsTempScreen> {
         }
       });
     }
-    readingsTimes.reversed.toList();
+    readingsTimes = readingsTimes.reversed.toList();
   }
 
   listReadings() {
