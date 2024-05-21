@@ -104,7 +104,7 @@ public class ReceiveCloud implements MqttCallback {
         // documentLabel.append(sql_database_connection_to_aux + "\n");
         // documentLabel.append(sql_database_user_to_aux + "\n");
         // documentLabel.append(sql_database_password_to_aux + "\n");
-        iqr = new OutlierDetector();
+
         sqlConection.connectDatabase_to();
         int nrRegistosOutlierTemperatura = 25;
         int nrRegistosAlertaTemperatura = 15;
