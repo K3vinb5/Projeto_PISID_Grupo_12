@@ -31,8 +31,9 @@ public class AlertInserter {
     private LinkedList<Double> measurements = new LinkedList<>();
 
 
-    public AlertInserter( WriteMysql sqlConnection ){
+    public AlertInserter( WriteMysql sqlConnection, int averageSampleSize ){
         this.sqlConnection = sqlConnection;
+        this.averageSampleSize = averageSampleSize;
     }
 
 

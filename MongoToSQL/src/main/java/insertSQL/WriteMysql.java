@@ -376,6 +376,14 @@ public class WriteMysql {
         s.close();
     }
 
+    public ResultSet getAditionalParams() throws SQLException {
+        Statement statement = connTo.createStatement();
+        String query = "SELECT * FROM `parametroadicional`";
+        statement.executeQuery(query);
+        ResultSet res =statement.getResultSet();
+        res.next();
+        return statement.getResultSet();
+    }
 
 
 }

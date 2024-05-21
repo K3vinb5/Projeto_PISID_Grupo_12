@@ -104,8 +104,22 @@ public class ReceiveCloud implements MqttCallback {
         // documentLabel.append(sql_database_connection_to_aux + "\n");
         // documentLabel.append(sql_database_user_to_aux + "\n");
         // documentLabel.append(sql_database_password_to_aux + "\n");
-        iqr = new OutlierDetector();
-        alertInserter = new AlertInserter(sqlConection);
+
+        sqlConection.connectDatabase_to();
+        int nrRegistosOutlierTemperatura = 25;
+        int nrRegistosAlertaTemperatura = 15;
+        try {
+            ResultSet rs = sqlConection.getAditionalParams(); //Pointer do RS já está na primeira linha
+            nrRegistosOutlierTemperatura = rs.getInt("NrRegistosOutlierTemperatura");
+            nrRegistosAlertaTemperatura = rs.getInt("NrRegistosAlertaTemperatura");
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            sqlConection.close();
+        }
+        iqr = new OutlierDetector(nrRegistosOutlierTemperatura);
+        alertInserter = new AlertInserter(sqlConection,nrRegistosAlertaTemperatura);
+
         // sqlConection.connectDatabase_to();
 
 
