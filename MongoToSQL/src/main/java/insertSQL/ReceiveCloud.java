@@ -122,7 +122,6 @@ public class ReceiveCloud implements MqttCallback {
 
         // sqlConection.connectDatabase_to();
 
-
     }
 
     // Factory
@@ -218,11 +217,15 @@ public class ReceiveCloud implements MqttCallback {
                     callWrongValues = true;
                 }
 
-                if (enableSPValidation && !callWrongValues){
+                if(!callWrongValues){
                     ResultSet currentExp = sqlConection.getCurrentExp();
-                    if (currentExp.next()){
+                    boolean expOnGoing = currentExp.next();
+                    if (expOnGoing && enableSPValidation)
                         alertInserter.addMeasurement(documentsToSend.getFirst(),currentExp);
-                    }
+                    if (expOnGoing && !enableSPValidation)
+                        alertInserter.resetTimer(currentExp.getInt("SegundosSemMovimento"));
+                    else alertInserter.shutdownTimer();
+
                 }
 
                 if (!callWrongValues && !sqlConection.CallToMySQL(spName, documentsToSend.getFirst()))

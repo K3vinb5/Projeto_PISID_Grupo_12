@@ -339,7 +339,7 @@ public class WriteMysql {
 
     public boolean alertInsert(BsonDocument bsonDocument, boolean isTemperature  ,String tipoAlerta, String mensagem) throws SQLException {
         CallableStatement stmt = connTo.prepareCall("{call InserirAlerta(?,?,?,?,?)}");
-        stmt.setString(1, isTemperature ? null : bsonDocument.getString("Sala").getValue());
+        stmt.setString(1, null );
         stmt.setString(2, !isTemperature ? null :  bsonDocument.getString("Sensor").getValue());
         stmt.setString(3, !isTemperature ? null : ((BsonString)bsonDocument.get("Leitura")).getValue());
         stmt.setString(4, tipoAlerta );
@@ -384,6 +384,7 @@ public class WriteMysql {
         res.next();
         return statement.getResultSet();
     }
+
 
 
 }
