@@ -6,9 +6,15 @@ import java.util.Queue;
 
 public class OutlierDetector {
 
-    private static final int OUTLIERDETECTORSIZE = 100; //TODO buscar bd campos adicionais
+    private int detectorSize;
     private ArrayList<Double> orderedValues = new ArrayList<>();
     private Queue<Double> lastValues = new LinkedList<>();
+
+
+    public OutlierDetector(int detectorSize){
+        this.detectorSize = detectorSize;
+    }
+
 
     /**
      * Tests if value from parameter is an Outlier in the recent data set in
@@ -18,7 +24,7 @@ public class OutlierDetector {
      * @return true if the value is an Outlier or false otherwise
      */
     public boolean checkOutlier(double value) {
-        if (orderedValues.size() == OUTLIERDETECTORSIZE) {
+        if (orderedValues.size() == detectorSize) {
             orderedValues.remove(lastValues.poll());
         }
         lastValues.add(value); // Add new value to Queue
@@ -70,7 +76,7 @@ public class OutlierDetector {
     }
 
     public static void main(String[] args) {
-        OutlierDetector od = new OutlierDetector();
+        OutlierDetector od = new OutlierDetector(25);
         int counter = 0;
         for (int i = 0; i < 1000; i++) {
             double val = i % 100 == 0 ? Math.random() * 100 - 50 : Math.random() * 20;

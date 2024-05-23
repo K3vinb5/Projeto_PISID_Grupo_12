@@ -143,8 +143,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperienciaUserFriendly` (IN 
     DECLARE i INT DEFAULT 1;
     DECLARE colunas_count INT;
     DECLARE valores_count INT;
-    SET colunas_count = LENGTH(colunas) - LENGTH(REPLACE(colunas, ',', '')) + 1;
-    SET valores_count = LENGTH(valores) - LENGTH(REPLACE(valores, ',', '')) + 1;
+    SET colunas_count = LENGTH(colunas) - LENGTH(REPLACE(colunas, ';', '')) + 1;
+    SET valores_count = LENGTH(valores) - LENGTH(REPLACE(valores, ';', '')) + 1;
 
     IF colunas_count != valores_count THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Deve atribuir valores a todas as colunas!';
@@ -160,8 +160,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EditarExperienciaUserFriendly` (IN 
     END IF;
     
     WHILE i <= colunas_count DO
-        SET splitColuna = SUBSTRING_INDEX(SUBSTRING_INDEX(colunas, ',', i), ',', -1);
-        SET splitValor = SUBSTRING_INDEX(SUBSTRING_INDEX(valores, ',', i), ',', -1);
+        SET splitColuna = SUBSTRING_INDEX(SUBSTRING_INDEX(colunas, ';', i), ',', -1);
+        SET splitValor = SUBSTRING_INDEX(SUBSTRING_INDEX(valores, ';', i), ',', -1);
         
         IF LOWER(splitColuna) LIKE LOWER('%Descrição%') THEN
             UPDATE experiencia e

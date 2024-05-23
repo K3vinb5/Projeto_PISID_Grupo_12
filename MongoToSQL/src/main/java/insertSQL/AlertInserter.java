@@ -7,6 +7,10 @@ import org.bson.BsonString;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class AlertInserter {
 
@@ -20,7 +24,13 @@ public class AlertInserter {
     private double alertHighLimit;
     private double alertLowLimit;
 
+
     private WriteMysql sqlConnection;
+
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledFuture<?> futureTask;
+
 
 
     private static final int BELLOWMINIMUMALERTTYPE = 1; // Tipo de alerta enviado quando a média está abaixo do aviso
@@ -31,8 +41,9 @@ public class AlertInserter {
     private LinkedList<Double> measurements = new LinkedList<>();
 
 
-    public AlertInserter( WriteMysql sqlConnection ){
+    public AlertInserter( WriteMysql sqlConnection, int averageSampleSize ){
         this.sqlConnection = sqlConnection;
+        this.averageSampleSize = averageSampleSize;
     }
 
 
@@ -83,6 +94,25 @@ public class AlertInserter {
         }
         if (lastType != WITHINBOUNDERIESALERTTYPE && sqlConnection.alertInsert(document,true,"Temperatura"+WITHINBOUNDERIESALERTTYPE,"Temperatura regressou aos limites"))
                 lastType = WITHINBOUNDERIESALERTTYPE;
+    }
+
+    private void sendNoMovementAlert(){
+        try{
+            sqlConnection.alertInsert(null,false,"Sem movimento","Movimento não detetado no tempo parametrizado, experiência terminada");
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+    public synchronized void resetTimer(int delayInSeconds) {
+        if (futureTask != null && !futureTask.isCancelled()) {
+            futureTask.cancel(false);
+        }
+        futureTask = scheduler.schedule(this::sendNoMovementAlert, delayInSeconds, TimeUnit.SECONDS);
+    }
+
+    public void shutdownTimer() {
+        if (!scheduler.isShutdown() && futureTask != null && !futureTask.isCancelled())
+            scheduler.shutdown();
     }
 
 
