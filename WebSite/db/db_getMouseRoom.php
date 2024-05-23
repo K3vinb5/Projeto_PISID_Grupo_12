@@ -7,10 +7,14 @@ $password = $_POST["password"];
 // $password = "";
 $conn = mysqli_connect($dbhost, $username, $password, $db);
 
-//TODO Random Id for testing
+$sql = "SELECT IDExperiencia FROM v_expadecorrer LIMIT 1";
 
-$id = 24;
-// echo "OLAAAA";
+$result = mysqli_query($conn, $sql);
+
+$r = mysqli_fetch_assoc($result);
+
+$id = $r["IDExperiencia"];
+
 $sql = "SELECT Sala, NúmeroRatosFinal FROM medicoessala WHERE IDExperiencia = $id ORDER BY Sala ASC";
 
 $result = mysqli_query($conn, $sql);
