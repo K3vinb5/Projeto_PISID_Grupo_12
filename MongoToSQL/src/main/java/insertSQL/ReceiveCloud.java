@@ -74,7 +74,7 @@ public class ReceiveCloud implements MqttCallback {
         });
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         if (!loadArgs(args))
             return;
@@ -89,8 +89,7 @@ public class ReceiveCloud implements MqttCallback {
             sqlConectionAUX.connectDatabase_to();
         }
 
-       new ReceiveCloud().connecCloud();
-
+        new ReceiveCloud().connecCloud();
 
         // documentLabel.append(cloud_server + "\n");
         // documentLabel.append(cloud_topic + "\n");
@@ -109,16 +108,16 @@ public class ReceiveCloud implements MqttCallback {
         int nrRegistosOutlierTemperatura = 25;
         int nrRegistosAlertaTemperatura = 15;
         try {
-            ResultSet rs = sqlConection.getAditionalParams(); //Pointer do RS já está na primeira linha
+            ResultSet rs = sqlConection.getAditionalParams(); // Pointer do RS já está na primeira linha
             nrRegistosOutlierTemperatura = rs.getInt("NrRegistosOutlierTemperatura");
             nrRegistosAlertaTemperatura = rs.getInt("NrRegistosAlertaTemperatura");
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             sqlConection.close();
         }
         iqr = new OutlierDetector(nrRegistosOutlierTemperatura);
-        alertInserter = new AlertInserter(sqlConection,nrRegistosAlertaTemperatura);
+        alertInserter = new AlertInserter(sqlConection, nrRegistosAlertaTemperatura);
 
         // sqlConection.connectDatabase_to();
 
@@ -146,7 +145,7 @@ public class ReceiveCloud implements MqttCallback {
         ReceiveCloud.sql_table_to = args[2];
         ReceiveCloud.sql_database_connection_to = args[3];
         ReceiveCloud.sql_database_user_to = args[4];
-        ReceiveCloud.sql_database_password_to =  args[5];
+        ReceiveCloud.sql_database_password_to = args[5];
         ReceiveCloud.spName = args[6];
         ReceiveCloud.tipoMedicao = args[7];
         ReceiveCloud.spValidate = args[8];
@@ -180,6 +179,15 @@ public class ReceiveCloud implements MqttCallback {
         BsonDocument document = BsonDocument.parse(c.toString());
         documentsToSend.add(document);
 
+        // if (document.get("Solucao") != null) {
+        // try {
+        // sqlConection.closeExp(43);
+        // System.out.println(document.toJson());
+        // } catch (SQLException e) {
+        // e.printStackTrace();
+        // }
+        // }
+
         if (sqlConection.isDown())
             return;
 
@@ -202,8 +210,8 @@ public class ReceiveCloud implements MqttCallback {
                 callWrongValues = false;
                 if (enableSPValidation
                         && (!sqlConection.isSensorValid(spValidate, documentsToSend.getFirst())
-                        || !sqlConection.isDouble(
-                        (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue()))))
+                                || !sqlConection.isDouble(
+                                        (((BsonString) documentsToSend.getFirst().get("Leitura")).getValue()))))
                     callWrongValues = true;
 
                 if (enableAuxBDValidation && !sqlConectionAUX.isDown()
@@ -212,19 +220,21 @@ public class ReceiveCloud implements MqttCallback {
 
                 if (enableSPValidation && !callWrongValues
                         && iqr.checkOutlier(Double
-                        .parseDouble((((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))) {
+                                .parseDouble((((BsonString) documentsToSend.getFirst().get("Leitura")).getValue())))) {
                     tipoDado = "Outlier";
                     callWrongValues = true;
                 }
 
-                if(!callWrongValues){
+                if (!callWrongValues) {
                     ResultSet currentExp = sqlConection.getCurrentExp();
                     boolean expOnGoing = currentExp.next();
                     if (expOnGoing && enableSPValidation)
-                        alertInserter.addMeasurement(documentsToSend.getFirst(),currentExp);
+                        alertInserter.addMeasurement(documentsToSend.getFirst(), currentExp);
                     if (expOnGoing && !enableSPValidation)
-                        alertInserter.resetTimer(currentExp.getInt("SegundosSemMovimento"));
-                    else alertInserter.shutdownTimer();
+                        alertInserter.resetTimer(currentExp.getInt("SegundosSemMovimento"),
+                                currentExp.getInt("IDExperiencia"));
+                    else
+                        alertInserter.shutdownTimer();
 
                 }
 
