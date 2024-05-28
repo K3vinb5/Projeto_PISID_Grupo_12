@@ -42,7 +42,6 @@ import java.util.Map;
  */
 public class WriteMysql {
 
-
     /**
      * Sensor
      */
@@ -81,7 +80,7 @@ public class WriteMysql {
     private static List<Sensor> validSensors = new ArrayList<>();
 
     public WriteMysql(String sql_table_to, String sql_database_connection_to, String sql_database_user_to,
-                      String sql_database_password_to) {
+            String sql_database_password_to) {
         this.sql_table_to = sql_table_to;
         this.sql_database_connection_to = sql_database_connection_to;
         this.sql_database_user_to = sql_database_user_to;
@@ -219,8 +218,8 @@ public class WriteMysql {
             BsonValue value = document.get(params.get(i - 1));
             if ((!types.get(i - 1).equals("datetime") && value == null)
                     || (value != null && !isDouble(((BsonString) value).getValue())
-                    && !types
-                    .get(i - 1).equals("datetime")))
+                            && !types
+                                    .get(i - 1).equals("datetime")))
                 return false;
 
             stmt.setString(i, value == null ? null : ((BsonString) value).getValue());
@@ -298,18 +297,41 @@ public class WriteMysql {
                 : ((BsonString) document.get("SalaDestino")).getValue();
         if (salaA == null || salaB == null)
             return false;
-        Statement stmt = connTo.createStatement();
-        ResultSet rs = stmt
-                .executeQuery(
-                        "SELECT COUNT(*) FROM corredor WHERE salaa =" + Integer.parseInt(
-                                salaA) + " AND salab =" + Integer.parseInt(salaB) + ";");
+
+        String corredor = salaA + salaB;
+        List<String> salas = new ArrayList<>();
+        salas.add("12");
+        salas.add("13");
+        salas.add("24");
+        salas.add("25");
+        salas.add("32");
+        salas.add("45");
+        salas.add("53");
+        salas.add("56");
+        salas.add("57");
+        salas.add("68");
+        salas.add("75");
+        salas.add("89");
+        salas.add("810");
+        salas.add("97");
+
+        if (!salas.contains(corredor))
+            return false;
+        else
+            return true;
+
+        // Statement stmt = connTo.createStatement();
+        // ResultSet rs = stmt
+        // .executeQuery(
+        // "SELECT COUNT(*) FROM corredor WHERE salaa =" + Integer.parseInt(
+        // salaA) + " AND salab =" + Integer.parseInt(salaB) + ";");
         // ResultSet rs = stmt
         // .executeQuery(
         // "SELECT COUNT(*) FROM corredor WHERE salaa = 1 AND salab = 2");
-        if (rs.next())
-            return rs.getInt("COUNT(*)") != 0;
+        // if (rs.next())
+        // return rs.getInt("COUNT(*)") != 0;
 
-        return false;
+        // return false;
     }
 
     public void insertToMySQL(String json) throws SQLException {
@@ -337,26 +359,28 @@ public class WriteMysql {
         return rs;
     }
 
-    public boolean alertInsert(BsonDocument bsonDocument, boolean isTemperature  ,String tipoAlerta, String mensagem) throws SQLException {
+    public boolean alertInsert(BsonDocument bsonDocument, boolean isTemperature, String tipoAlerta, String mensagem)
+            throws SQLException {
         CallableStatement stmt = connTo.prepareCall("{call InserirAlerta(?,?,?,?,?)}");
-        stmt.setString(1, null );
-        stmt.setString(2, !isTemperature ? null :  bsonDocument.getString("Sensor").getValue());
-        stmt.setString(3, !isTemperature ? null : ((BsonString)bsonDocument.get("Leitura")).getValue());
-        stmt.setString(4, tipoAlerta );
-        stmt.setString(5, mensagem );
-        try{
+        stmt.setString(1, null);
+        stmt.setString(2, !isTemperature ? null : bsonDocument.getString("Sensor").getValue());
+        stmt.setString(3, !isTemperature ? null : ((BsonString) bsonDocument.get("Leitura")).getValue());
+        stmt.setString(4, tipoAlerta);
+        stmt.setString(5, mensagem);
+
+        try {
             stmt.execute();
             return true;
-        }catch (SQLException e){
-             System.out.println("Alert recused: spam maker");
-             return false;
-        }finally {
+        } catch (SQLException e) {
+            System.out.println("Alert recused: spam maker");
+            return false;
+        } finally {
             stmt.close();
         }
 
     }
 
-    public ResultSet getCurrentExp() throws SQLException{
+    public ResultSet getCurrentExp() throws SQLException {
         PreparedStatement stmt = connTo.prepareStatement("SELECT * FROM v_expadecorrer ");
         stmt.execute();
         return stmt.getResultSet();
@@ -364,11 +388,10 @@ public class WriteMysql {
 
     public void closeExp(Integer currentExpId) throws SQLException {
         CallableStatement stmt = connTo.prepareCall("{call ComecarTerminarExperienca(?)}");
-        stmt.setInt(1,currentExpId);
+        stmt.setInt(1, currentExpId);
         stmt.execute();
         stmt.close();
     }
-
 
     private void execute(String SqlInsertCommand) throws SQLException {
         Statement s = connTo.createStatement();
@@ -380,11 +403,9 @@ public class WriteMysql {
         Statement statement = connTo.createStatement();
         String query = "SELECT * FROM `parametroadicional`";
         statement.executeQuery(query);
-        ResultSet res =statement.getResultSet();
+        ResultSet res = statement.getResultSet();
         res.next();
         return statement.getResultSet();
     }
-
-
 
 }

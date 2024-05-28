@@ -7,7 +7,7 @@ $time = $_POST["time"];
 
 // $username = "root";
 // $password = "";
-// $time = "3600";
+// $time = 3600;
 
 $conn = mysqli_connect($dbhost, $username, $password, $db);
 
@@ -23,20 +23,19 @@ if (mysqli_num_rows($result) > 0) {
         try {
             $ad = array();
             $ad["Hora"] = $r['DataHora'];
-            $ad["Sala"] = $r['Sala'];
-            $ad["Sensor"] = $r['Sensor'];
-            $ad["Leitura"] = $r['Leitura'];
+            $ad["Sala"] = $r['Sala'] == null ? "" : $r['Sala'];;
+            $ad["Sensor"] = $r['IDSensor'] == null ? "" : $r['IDSensor'];
+            $ad["Leitura"] = $r['Leitura'] == null ? "" : $r['Leitura'];;
             $ad["TipoAlerta"] = $r['TipoAlerta'];
             $ad["Mensagem"] = $r['Mensagem'];
             array_push($response["alerts"], $ad);
         } catch (Exception $e) {
-            echo($e);
+            echo ($e);
         }
     }
 }
 
-// header('Content-Type: application/json');
+header('Content-Type: application/json');
 // tell browser that its a json data
 echo json_encode($response);
 //converting array to JSON string
-?>
