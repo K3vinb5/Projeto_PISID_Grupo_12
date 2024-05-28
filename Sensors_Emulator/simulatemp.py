@@ -12,7 +12,9 @@ topic = "pisid_grupo12_temp_simulate"
 clientMqttMovements = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
 # clientMqttMovements = mqtt.Client()
 clientMqttMovements.on_connect = on_connectMqttTemp
-clientMqttMovements.connect("broker.mqtt-dashboard.com", 1883)
+# clientMqttMovements.connect("broker.mqtt-dashboard.com", 1883)
+clientMqttMovements.connect("kevin-is-awesome.mooo.com", 9001)
+
 i = 0
 while True:
     i = i + 1

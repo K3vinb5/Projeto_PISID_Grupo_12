@@ -5,9 +5,9 @@ $username = $_POST["username"];
 $password = $_POST["password"];
 $time = $_POST["time"];
 
-$username = "root";
-$password = "";
-$time = "3600";
+// $username = "root";
+// $password = "";
+// $time = "3600";
 
 $conn = mysqli_connect($dbhost, $username, $password, $db);
 

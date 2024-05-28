@@ -178,6 +178,7 @@ public class ReceiveCloud implements MqttCallback {
         // sqlConection.connectDatabase_to();
 
         BsonDocument document = BsonDocument.parse(c.toString());
+        System.out.println(document.toJson());
         documentsToSend.add(document);
 
         if (sqlConection.isDown())

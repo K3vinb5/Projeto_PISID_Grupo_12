@@ -1,0 +1,204 @@
+2024-05-17 14:49:27 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-17 14:50:24 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-17 15:58:25 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-20 09:30:47 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-20 10:03:18 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-22 11:00:52 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-22 14:18:38 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-22 20:34:03 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-22 20:39:30 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-23 12:35:58 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-23 12:47:53 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
+2024-05-23 13:55:45 - Neovide panicked with the message 'Failed to create winit event loop: Os(OsError { line: 776, file: "/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winit-0.29.10/src/platform_impl/linux/mod.rs", error: Misc("neither WAYLAND_DISPLAY nor DISPLAY is set.") })'. (File: src/window/mod.rs; Line: 133, Column: 10)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  11: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  12: <unknown>
+
